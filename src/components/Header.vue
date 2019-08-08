@@ -11,14 +11,14 @@
   <div class="modal modal-mask modal-container" v-bind:class="{hidden: !menuToggle}">
   <div class="modal-card">
     <header class="modal-card-head">
-      <h1 class="modal-card-title">Hive</h1>
+      <router-link to="/"><h1 class="modal-card-title">Hive</h1></router-link>
     </header>
     <section class="modal-card-body">
       <aside class="menu">
         <p class="menu-label">General</p>
         <ul class="menu-list">
             <li><a>Dashboard</a></li>
-            <li><a>Logout</a></li>
+            <li><router-link to="/login">Login</router-link></li>
         </ul>
         <p class="menu-label">Game</p>
         <ul class="menu-list">
