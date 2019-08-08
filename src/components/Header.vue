@@ -9,49 +9,71 @@
   </div>
 
   <div class="modal modal-mask modal-container" v-bind:class="{hidden: !menuToggle}">
-  <div class="modal-background"></div>
   <div class="modal-card">
     <header class="modal-card-head">
       <h1 class="modal-card-title">Hive</h1>
     </header>
     <section class="modal-card-body">
       <aside class="menu">
-        <p class="menu-label">
-            General
-        </p>
+        <p class="menu-label">General</p>
         <ul class="menu-list">
             <li><a>Dashboard</a></li>
             <li><a>Logout</a></li>
         </ul>
-        <p class="menu-label">
-            Game
-        </p>
+        <p class="menu-label">Game</p>
         <ul class="menu-list">
             <li><a>Current Games</a></li>
-            <li>
-            <a class="is-active">New Game</a>
-            <ul class="new-game-menu">
-                <li><a>>Single Player</a></li>
-                <li><a>>Pass and Play</a></li>
-                <li><a>>Online</a></li>
-            </ul>
-            </li>
-            <li><a>Join Game</a>
-                <ul class="join-game-menu">
-                <li><a>>Game Code</a></li>
-                
-            </ul>
-            </li>
-            
+            <li><a class="is-active" @click=newGameMenu>New Game</a></li>
+            <li><a class="is-active" @click=joinMenu>Join Game</a></li>
+            <li><a class="is-active">Replays</a></li>
         </ul>
-        
-        </aside>
+      </aside>
     </section>
     <footer class="modal-card-foot">
       <button class="button is-danger  is-outlined" @click="showMenu">X</button>
     </footer>
   </div>
 </div>  
+
+<div class="modal modal-mask modal-container" v-bind:class="{hidden: !newGameToggle}">
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <p class="menu-label">New Game</p>
+    </header>
+    <section class="modal-card-body">
+      <aside class="menu">
+        <ul class="menu-list">
+            <li><a>Single Player</a></li>
+            <li><a>Pass and Play</a></li>
+            <li><a>Online</a></li>
+        </ul>
+      </aside>
+    </section>
+    <footer class="modal-card-foot">
+      <button class="button is-danger  is-outlined" @click="newGameMenu"><</button>
+    </footer>
+  </div>
+</div> 
+
+
+<div class="modal modal-mask modal-container" v-bind:class="{hidden: !joinGameToggle}">
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <p class="menu-label">Join Game</p>
+    </header>
+    <section class="modal-card-body">
+      <aside class="menu">
+        <ul class="menu-list">
+            <li><a>Enter Game Code</a></li>
+            <li><a>Friends List</a></li>
+        </ul>
+      </aside>
+    </section>
+    <footer class="modal-card-foot">
+      <button class="button is-danger  is-outlined" @click="joinMenu"><</button>
+    </footer>
+  </div>
+</div> 
 </div>
 </template>
 
@@ -63,11 +85,36 @@ import Menu from '@/components/Menu.vue';
     Menu,
   }})
 export default class extends Vue {
+
     menuToggle:boolean = false;
+    newGameToggle:boolean = false;
+    joinGameToggle:boolean = false;
+
     showMenu(){
-        this.menuToggle =! this.menuToggle
+        this.menuToggle =! this.menuToggle;
+        this.newGameToggle = false;
+        this.joinGameToggle = false;
     }
  
+    joinMenu(){
+        this.joinGameToggle = !this.joinGameToggle;
+        if(this.joinGameToggle) {
+            this.menuToggle = false;
+            this.newGameToggle = false;
+        } else{
+            this.menuToggle = true;
+        }
+    }
+
+    newGameMenu(){
+        this.newGameToggle = !this.newGameToggle;
+        if(this.newGameToggle) {
+            this.menuToggle = false;
+            this.joinGameToggle = false;
+        }else{
+            this.menuToggle = true;
+        }
+    }
 }
 </script>
 
@@ -105,7 +152,6 @@ export default class extends Vue {
 }
 
 .modal{
-   
     margin: auto;
     padding-bottom: 20px;
     padding-top:20px;
@@ -139,4 +185,22 @@ export default class extends Vue {
     text-align: left;
     margin-left: 50%;
 }
+
+.is-active {
+    color: #66fcf1;
+}
+
+.new-game-model {
+    margin: auto;
+    padding-bottom: 20px;
+    padding-top:20px;
+    position: fixed;
+    left:50px;
+    z-index: 9998;
+    width: 20%;
+    background-color: rgba(31, 40, 51, .5);
+    border: 1px solid #45a29e;
+}
+
+
 </style>
