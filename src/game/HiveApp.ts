@@ -13,10 +13,31 @@ export default class HiveApp{
         yEnd:number,
     };
 
+    colors:{
+        black:string,
+        d_grey:string,
+        l_grey:string,
+        ll_grey:string,
+        l_green:string,
+        d_green:string,
+        accent: string
+    };
+
     constructor(canvas:HTMLElement){
         //this.canvas = document.getElementById('game') as HTMLCanvasElement;
         this.canvas = canvas as HTMLCanvasElement;
         this.ctx = this.canvas.getContext('2d') as  CanvasRenderingContext2D;
+
+        // colors
+        this.colors = {
+            black: "#0b0c10",
+            d_grey: "#121314",
+            l_grey: "#50664a",
+            ll_grey: "#c5c6c7",
+            l_green: "#66fcf1",
+            d_green: "#45a29e",
+            accent: "#FFCD6D"
+        }
 
         // initially size the canvas the same as the viewport size
         this.canvas.width = window.innerWidth * 0.95;
@@ -35,8 +56,7 @@ export default class HiveApp{
         this.tileCenters = [];
         // holds all Hex objects (i.e, game pieces) 
         this.pieces = [];
-
-
+        
     }
 
     // initial game setup
@@ -123,7 +143,7 @@ export default class HiveApp{
         this.canvas.width = window.innerWidth *.9;
         this.canvas.height = window.innerHeight *.9;
         //console.log(this.canvas.width)
-        this.ctx.fillStyle = '#101115';
+        this.ctx.fillStyle = this.colors.l_grey;
         this.ctx.fillRect(0,0,this.canvas.width, this.canvas.height);
         
     }
@@ -157,9 +177,19 @@ export default class HiveApp{
             hexPoints.forEach((point)=>{
                 const [lx, ly] = point;
                 this.ctx.lineTo(lx,ly);
-            })       
-            this.ctx.strokeStyle = '#1012f';
-            this.ctx.fill();
+            })  
+            
+            for(let i = 0; i < hexPoints.length; i++){     
+                const [x,y] = hexPoints[i];
+                let my_gradient = this.ctx.createLinearGradient(x-200, y-i*10,x+i, y+i);
+                
+                my_gradient.addColorStop(0, '#101317');
+                my_gradient.addColorStop(1, '#101317');
+                this.ctx.fillStyle = my_gradient;
+                this.ctx.fill();
+            }
+
+            this.ctx.strokeStyle = this.colors.black;  
             this.ctx.stroke();
         }
     }
@@ -177,6 +207,7 @@ export default class HiveApp{
         for(let x = this.hexBounds.xStart + this.size; x < this.hexBounds.xEnd; x += widthSpace * 2 ) {
             for(let y = this.hexBounds.xStart + this.size; y< this.hexBounds.yEnd; y += heightSpace){
                 this.ctx.lineWidth = 2;
+                if(y + heightSpace < this.hexBounds.yEnd && x + widthSpace < this.hexBounds.xEnd )
                 this.tileCenters.push([x,y]);
                 // check that the 2nd column wont be outside the canvas
                 if(x + widthSpace < this.hexBounds.xEnd && y + heightSpace < this.hexBounds.yEnd){
@@ -189,10 +220,15 @@ export default class HiveApp{
     // the draw loop
     draw(){
         // clear the screen on every frame
-        this.ctx.fillStyle = '#101115';
-        this.ctx.fillRect(0,0,this.canvas.width, this.canvas.height);
+        //this.ctx.fillStyle = this.colors.black;
+        // am i pretty?
         
-        this.ctx.strokeStyle = 'black';       
+        this.ctx.fillStyle = this.colors.black;
+        this.ctx.fill();
+        this.ctx.stroke();
+        
+        this.ctx.fillRect(0,0,this.canvas.width, this.canvas.height);
+             
 
         this.tileCenters.forEach( tile => {
             this.drawHexBackground(tile[0], tile[1], this.size);
