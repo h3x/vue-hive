@@ -22,7 +22,7 @@
     </div>
     <div class="field">
     <p class="control">
-        <button class="button is-success">
+        <button class="button is-success  is-outlined">
         Login
         </button>
     </p>
@@ -33,6 +33,14 @@
 
 <style scoped>
 
+form{
+    padding-top: 20%;
+}
+
+input[type="text"], input[type="password"] {
+    background: #1f2833;
+    color: #66fcf1;
+}
 
 .field {
     width: 50%;

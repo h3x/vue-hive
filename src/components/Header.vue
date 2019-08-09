@@ -11,14 +11,14 @@
   <div class="modal modal-mask modal-container" v-bind:class="{hidden: !menuToggle}">
   <div class="modal-card">
     <header class="modal-card-head">
-      <router-link to="/"><h1 class="modal-card-title">Hive</h1></router-link>
+      <router-link to="/"><h1 class="modal-card-title" @click=closeAllMenus>Hive</h1></router-link>
     </header>
     <section class="modal-card-body">
       <aside class="menu">
         <p class="menu-label">General</p>
         <ul class="menu-list">
             <li><a>Dashboard</a></li>
-            <li><router-link to="/login">Login</router-link></li>
+            <li @click=closeAllMenus><router-link to="/login" >Login</router-link></li>
         </ul>
         <p class="menu-label">Game</p>
         <ul class="menu-list">
@@ -43,7 +43,7 @@
     <section class="modal-card-body">
       <aside class="menu">
         <ul class="menu-list">
-            <li><a>Single Player</a></li>
+            <li @click=closeAllMenus><router-link to="/game">Single Player</router-link></li>
             <li><a>Pass and Play</a></li>
             <li><a>Online</a></li>
         </ul>
@@ -114,6 +114,12 @@ export default class extends Vue {
         }else{
             this.menuToggle = true;
         }
+    }
+
+    closeAllMenus(){
+      this.newGameToggle = false;
+      this.joinGameToggle = false;
+      this.menuToggle = false;
     }
 }
 </script>

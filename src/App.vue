@@ -41,4 +41,9 @@ export default class App extends Vue {}
 #nav a.router-link-exact-active {
   color: #42b983;
 }
+
+#game{
+  display: none;
+}
+
 </style>
