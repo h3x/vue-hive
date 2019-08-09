@@ -6,6 +6,10 @@
         <div class="bar2"></div>
         <div class="bar3"></div>
     </div>
+
+    <div id="chat" class="navbar-end" v-bind:class="{ hidden: $route.path!=='/game'}">
+      <Chat2 />
+    </div>
   </div>
 
   <div class="modal modal-mask modal-container" v-bind:class="{hidden: !menuToggle}">
@@ -23,14 +27,15 @@
         <p class="menu-label">Game</p>
         <ul class="menu-list">
             <li><a>Current Games</a></li>
-            <li><a class="is-active" @click=newGameMenu>New Game</a></li>
-            <li><a class="is-active" @click=joinMenu>Join Game</a></li>
-            <li><a class="is-active">Replays</a></li>
+            <li><a @click=newGameMenu>New Game</a></li>
+            <li><a @click=joinMenu>Join Game</a></li>
+            <li><a >Replays</a></li>
         </ul>
       </aside>
     </section>
+    
     <footer class="modal-card-foot">
-      <button class="button is-danger  is-outlined" @click="showMenu">X</button>
+      <button class="button is-danger  is-outlined menuButton" @click="showMenu">X</button>
     </footer>
   </div>
 </div>  
@@ -50,7 +55,7 @@
       </aside>
     </section>
     <footer class="modal-card-foot">
-      <button class="button is-danger  is-outlined" @click="newGameMenu"><</button>
+      <button class="button is-danger is-outlined menuButton" @click="newGameMenu"><</button>
     </footer>
   </div>
 </div> 
@@ -70,7 +75,7 @@
       </aside>
     </section>
     <footer class="modal-card-foot">
-      <button class="button is-danger  is-outlined" @click="joinMenu"><</button>
+      <button class="button is-danger  is-outlined menuButton" @click="joinMenu"><</button>
     </footer>
   </div>
 </div> 
@@ -80,9 +85,11 @@
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import Menu from '@/components/Menu.vue';
+import Chat2 from '@/components/Chat2';
  
 @Component({components: {
     Menu,
+    Chat2
   }})
 export default class extends Vue {
 
@@ -125,7 +132,15 @@ export default class extends Vue {
 </script>
 
 
-<style>
+<style scoped>
+#chat{
+  margin-right: 15px;
+  margin-top:auto;
+  margin-bottom:auto;
+}
+#chat:hover {
+  color: black;
+}
 
 .navbar-brand{
     background: #0b0c10;
@@ -159,15 +174,20 @@ export default class extends Vue {
 
 .modal{
     margin: auto;
-    padding-bottom: 20px;
     padding-top:20px;
     position: fixed;
     left:15px;
     z-index: 9998;
-    width: 20%;
-    background-color: rgba(31, 40, 51, .5);
+    width: 10%;
+    background-color: rgba(31, 40, 51, .9);
     border: 1px solid #45a29e;
 }
+
+.modal-card-foot{
+  margin-top:20px;
+  position: relative;
+}
+
 .hidden{
     display: none;
 }
@@ -176,11 +196,6 @@ export default class extends Vue {
     font-size: 2em;
     color: #66fcf1;
 }
-
-.modal-card-foot > button {
-    margin-top: 20px;
-}
-
 
 .menu-label{
     color:orange;
@@ -196,17 +211,14 @@ export default class extends Vue {
     color: #66fcf1;
 }
 
-.new-game-model {
-    margin: auto;
-    padding-bottom: 20px;
-    padding-top:20px;
-    position: fixed;
-    left:50px;
-    z-index: 9998;
-    width: 20%;
-    background-color: rgba(31, 40, 51, .5);
-    border: 1px solid #45a29e;
+
+
+.modal-card-body{
+  display:block;
 }
+
+
+
 
 
 </style>

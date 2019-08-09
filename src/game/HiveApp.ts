@@ -17,9 +17,10 @@ export default class HiveApp{
         //this.canvas = document.getElementById('game') as HTMLCanvasElement;
         this.canvas = canvas as HTMLCanvasElement;
         this.ctx = this.canvas.getContext('2d') as  CanvasRenderingContext2D;
+
         // initially size the canvas the same as the viewport size
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight;
+        this.canvas.width = window.innerWidth * 0.95;
+        this.canvas.height = window.innerHeight * 0.9;
 
         // describes the boundries for the hex grid game board
         this.hexBounds = {
@@ -119,8 +120,8 @@ export default class HiveApp{
     resizeCanvas() {
         // console.log("resizeCanvas function")
         // console.log(this.canvas.width)
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight;
+        this.canvas.width = window.innerWidth *.9;
+        this.canvas.height = window.innerHeight *.9;
         //console.log(this.canvas.width)
         this.ctx.fillStyle = '#101115';
         this.ctx.fillRect(0,0,this.canvas.width, this.canvas.height);
