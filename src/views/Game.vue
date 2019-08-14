@@ -9,8 +9,8 @@
 
 <script lang="ts">
 import { Component, Vue, Prop } from "vue-property-decorator";
-import HiveGame from "@/components/HiveGame"; 
-import Chat2 from "@/components/Chat2"; 
+import HiveGame from "@/components/HiveGame.vue"; 
+import Chat2 from "@/components/Chat2.vue"; 
 @Component({
   components: {
     HiveGame,

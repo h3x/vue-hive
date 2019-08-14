@@ -1,30 +1,12 @@
-// dot.ts
-export default class Dot {
-    
-    private readonly color: string = "#000";
-    constructor(private radius: number) { }
-    public draw(canvas: HTMLCanvasElement): void {
-        // resize canvas to dot size
-        const canvasDim = this.radius * 2;
-        canvas.width = canvasDim;
-        canvas.height = canvasDim;
+import * as RB from './RedBlob';
 
-        // get context for drawing
-        const ctx = canvas.getContext('2d')!;
-
-        // start with a blank slate
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // find the centerpoint
-        const centerX = canvas.width / 2;
-        const centerY = canvas.height / 2;
-
-        // create the shape
+export function draw(ctx: CanvasRenderingContext2D, center: [number, number], size: number) {
+        ctx.fillStyle = '#00ff00';
+        const [lx, ly] = RB.hex_to_pixel(center[0], center[1], size);
+        const [x, y] = [lx + size, ly + size];
         ctx.beginPath();
-        ctx.arc(centerX, centerY, this.radius, 0, 2 * Math.PI, false);
-        ctx.fillStyle = this.color;
+        ctx.arc(x, y, 10, 0, 2 * Math.PI);
         ctx.fill();
-        ctx.stroke();
-    }
+
 }
 

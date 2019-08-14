@@ -87,7 +87,8 @@ export default class extends Vue {
 footer {
     position: absolute;
     bottom: 15px;
-    width:100%;
+    width:95%;
+    margin-left:2%;
 }
 
 footer > button {
@@ -97,10 +98,10 @@ footer > button {
 }
 
 #msgText {
-    width: 10px;
-    
+    margin: auto;
     background:#0b0c10;
     color: #45a29e;
+    border: 1px solid #66fcf1;
 }
 
 .msg {

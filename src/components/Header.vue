@@ -85,7 +85,7 @@
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import Menu from '@/components/Menu.vue';
-import Chat2 from '@/components/Chat2';
+import Chat2 from '@/components/Chat2.vue';
  
 @Component({components: {
     Menu,
