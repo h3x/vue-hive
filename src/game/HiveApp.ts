@@ -13,6 +13,8 @@ export default class HiveApp {
 
     public heightSpace: number;
     public widthSpace: number;
+    public whiteQueen: Hex;
+    public blackQueen: Hex;
 
     public colors: {
         black: string,
@@ -31,7 +33,11 @@ export default class HiveApp {
     public pieces: Hex[];
     public legalMoves: Array<[number,number]> = [];
     public moveCount: number;
-    public turn: 'W'|'B';
+    public turn: 'W'|'B'|null;
+
+    private selectedHex:Hex|null;
+    private previousLocation:[number, number]|null;
+    
 
     constructor(canvas: HTMLElement) {
 
@@ -61,11 +67,15 @@ export default class HiveApp {
         this.heightSpace =  Math.sqrt(3) * this.getSize();
         this.widthSpace = 2 * this.getSize() * 3 / 4;
 
-        //this.legalMoves = []
         this.pieces = [];
         this.moveCount = 0;
         this.turn = 'W';
 
+        this.selectedHex = null;
+        this.previousLocation = null;
+        this.legalMoves = [];
+        this.whiteQueen = new Hex(this.getSize(), 'Q', 0, 'W');
+        this.blackQueen = new Hex(this.getSize(), 'Q', 0, 'B');
     }
 
     public getSize() {
@@ -120,7 +130,7 @@ export default class HiveApp {
 
         this.ctx.fillStyle = this.colors.black;
         this.ctx.lineWidth = 2;
-        this.ctx.strokeStyle = this.colors.black;
+        this.ctx.strokeStyle = this.colors.accent;
         this.ctx.stroke();
         this.ctx.fill();
 
@@ -137,59 +147,119 @@ export default class HiveApp {
     // TODO: fix the click thing when you click a piece then not the board, the turn changes without piece being moved
     // also i think i need a condition for 'no move avalible' and turn is skipped
     public clickListener() {
-        let selectedHex: Hex|null;
-        let previousLocation: [number, number]|null = null;
-
         this.canvas.addEventListener('mousedown', (evt) => {
             const rect = this.canvas.getBoundingClientRect();
             const cx = evt.clientX - rect.left;
             const cy = evt.clientY - rect.top;
-            if (!selectedHex) {
-                ({ selectedHex, previousLocation } = this.firstClick(cx, cy, selectedHex, previousLocation));
+
+            if (!this.selectedHex) {
+                this.firstClick(cx, cy);
             } else {
-                ({ selectedHex, previousLocation } = this.secondClick(cx, cy, selectedHex));
+                this.secondClick(cx, cy);
             }
         });
     }
 
-    private secondClick(cx: number, cy: number, selectedHex: Hex) {
-        const location = selectedHex.getLocation();
-        const [px, py] = RB.pixel_to_hex(cx, cy, this.getSize()); // click hex
-        const [hx, hy] = RB.pixel_to_hex(location[0], location[1], this.getSize()); // piece hex
-        this.pieces.forEach((p) => p.unselect());
-        this.legalMoves && this.legalMoves.includes([px,py]) 
-        // this.legalMoves && this.legalMoves.includes([hx,hy]) // replace below wit hthis !(px == hx && py == hy)
-        if (this.legalMoves && this.legalMoves.includes([px,py]) ) { // check the piece is being moved before moving the pience and changing turns to other player
-            this.nextPlayer();
-            this.moveCount++;
-            selectedHex.unDock();
-            this.board.move(selectedHex, Math.min(px, this.boardDims.width), Math.min(py, this.boardDims.height), [hx, hy]); // dirty bounds hack
-        }
+    private firstClick(cx: number, cy: number) {
 
-        return { selectedHex:null, previousLocation: null };
-    }
-
-    private firstClick(cx: number, cy: number, selectedHex: Hex | null, previousLocation: [number, number] | null) {
         this.pieces.forEach((piece) => {
             if (this.dist([cx, cy], piece.getLocation()) < this.size && piece.isMoveable() && piece.getPlayer().color == this.turn) {
-                selectedHex = piece;
-                // normal game play
-                if (this.moveCount > 1) {
-                    previousLocation = piece.getLocation();
-                    selectedHex.select();
-                    const m = this.board.getScurryMoves(selectedHex, 2)
+                this.selectedHex = piece;
 
-                    this.legalMoves.concat(m)
+                // normal game play
+                if (this.moveCount > 1){
+                    if(!this.queenInFour()){
+                        if(this.turn ==='W')
+                            this.selectedHex = this.whiteQueen;
+                        else
+                            this.selectedHex = this.blackQueen;
+                    }
+                    
+                    this.selectedHex.select();
+                    this.previousLocation = piece.getHex();   
+
+                    if(this.selectedHex.isPieceDocked())
+                        this.legalMoves = this.board.newPiece(piece, this.pieces)                           
+                    else if(this.board.queenPlayed[this.turn]){
+                        if(this.selectedHex.attr.scurry)
+                            this.legalMoves = this.board.getScurryMoves(this.selectedHex,this.selectedHex.attr.moves, this.pieces)
+                        else if(this.selectedHex.attr.canJump)
+                            this.legalMoves = this.board.getJumpMoves(this.selectedHex, this.pieces)
+                    }
+                    
                 }
 
                 // force the first 2 moves to these locations to start the game
                 else {
-                    selectedHex = this.firstTwoMoves(selectedHex);
-                }
-                
+                    if(this.selectedHex.type === 'Q')
+                        this.board.queenPlayed[this.turn] = true;
+                    this.selectedHex.unDock();
+                    this.selectedHex = this.firstTwoMoves(this.selectedHex);
+                    
+                }                
             }
         });
-        return { selectedHex, previousLocation };
+        this.legalMoves
+    }
+
+
+    private secondClick(cx: number, cy: number) {
+        if(this.selectedHex){
+            const [hx, hy] = this.selectedHex.getHex(); // piece location
+            const [px, py] = RB.pixel_to_hex(cx, cy, this.getSize()); // click location
+
+            // this nightmare just makes sure the click was on a location with a legal move
+            const isLegal:boolean = this.legalMoves.map(([x,y]) => x == px && y == py).includes(true)
+
+            this.pieces.forEach((p) => p.unselect()); // unselect all pieces
+           
+            if (isLegal) { // check the piece is being moved before moving the pience and changing turns to other player
+                this.moveCount++;
+                this.selectedHex.unDock();
+                if(this.selectedHex.type === 'Q' && this.turn){
+                    this.board.queenPlayed[this.turn] = true;
+                }  
+                
+                this.board.move(this.selectedHex, Math.min(px, this.boardDims.width), Math.min(py, this.boardDims.height), [hx, hy]); // dirty bounds hack
+                this.nextPlayer();
+
+            }
+        }
+        this.legalMoves = []
+        this.selectedHex = null;
+        
+    }
+
+    private checkWin(){
+       
+        if(this.board.getAdjacentPieces(this.whiteQueen,this.pieces).length > 5){
+            console.log('Black wins!')
+            this.ctx.fillStyle = this.blackQueen.color;
+            this.ctx.font='48px serif';
+            this.ctx.fillText("Black wins!", Math.floor(this.canvas.width/2), 60);
+            this.turn = null;
+        }
+        if(this.board.getAdjacentPieces(this.blackQueen,this.pieces).length > 5){
+            console.log('white wins!')
+            this.ctx.fillStyle = this.whiteQueen.color;
+            this.ctx.font='48px serif';
+            this.ctx.fillText("White wins!", 10, 50);
+            this.turn = null;
+        }
+        
+
+    }
+
+    private queenInFour():boolean{
+        const white = this.pieces.filter(el => !el.isPieceDocked() && el.player === 'W')
+        const black = this.pieces.filter(el => !el.isPieceDocked() && el.player === 'B')
+
+        if(this.turn == 'W' && white.length > 2 && !this.board.queenPlayed['W'])
+            return false
+        else if(this.turn == 'B' && black.length > 2 && !this.board.queenPlayed['B'])
+            return false
+        else
+            return true
     }
 
     private firstTwoMoves(selectedHex: Hex) {
@@ -217,10 +287,13 @@ export default class HiveApp {
 
 
     private setupPieces() {
-        const pieces: Array<[string, number]> = [['Q', 0], ['A', 0], ['A', 1], ['A', 2], ['G', 0], ['G', 1], ['G', 2], ['S', 0], ['S', 1], ['L', 0], ['M', 0]];
+        const pieces: Array<[string, number]> = [['Q',0],['A', 0], ['A', 1], ['A', 2], ['G', 0], ['G', 1], ['G', 2], ['S', 0], ['S', 1]];
         // Black pieces
         for (let i = 0; i < pieces.length; i++) {
-            const h = new Hex(this.getSize(), pieces[i][0], pieces[i][1], 'B');
+            let h = new Hex(this.getSize(), pieces[i][0], pieces[i][1], 'B');
+            if(pieces[i][0] === 'Q')
+                h = this.blackQueen
+            
             const fx = this.canvas.width - this.widthSpace;
             const fy = this.canvas.height - this.heightSpace * (i + 1);
             h.forceLocation(fx, fy);
@@ -228,7 +301,9 @@ export default class HiveApp {
         }
         // White pieces
         for (let i = 0; i < pieces.length; i++) {
-            const h = new Hex(this.getSize(), pieces[i][0], pieces[i][1], 'W');
+            let h = new Hex(this.getSize(), pieces[i][0], pieces[i][1], 'W');
+            if(pieces[i][0] === 'Q')
+                h = this.whiteQueen
             const fx = this.canvas.width - this.widthSpace * 3;
             const fy = this.canvas.height - this.heightSpace * (i + 1);
             h.forceLocation(fx, fy);
@@ -248,7 +323,7 @@ export default class HiveApp {
                 const p = this.boardState[hy][hx];
                 // Skip empty board slots
                 if ( p === null) {
-                    // this.drawHex(hx,hy);
+                    //this.drawHex(hx,hy);
                     continue;
                 } else if (p === 'move') {
                     this.drawDot(hx,hy);
@@ -257,9 +332,9 @@ export default class HiveApp {
 
             }
 
-
+        this.checkWin()
         // Draw legal moves
-        this.legalMoves.forEach(pos=>  Dot.draw(this.ctx, pos ,this.size));
+        this.legalMoves.forEach(pos=> Dot.draw(this.ctx, pos, this.size));
         
         // Draw pieces
         this.pieces.forEach((p) => p.draw(this.ctx, p.getHex(), true));      

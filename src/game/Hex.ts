@@ -12,15 +12,14 @@ export default class Hex {
     public inPlay: boolean;
     public id: number;
     public isDocked:boolean;
+    public visited:boolean;
 
     // Piece type: Queen, Ant, Beetle, Grasshopper, Spider, Ladybug, Mosquito
     // Player: White, Black
     public type: string;
     public player: 'W'|'B';
 
-    public attr = {
-        scurry: 0,
-    };
+    public attr:{scurry:boolean, moves:number,canJump:boolean,canClimb:boolean} 
 
 
     constructor(size: number, type: string, id: number, player: 'W'|'B') {
@@ -33,7 +32,8 @@ export default class Hex {
         this.defaultColor = '#101115';
         this.corners = [];
         this.isDocked = true;
-        // todo
+        this.visited = false;
+        
         this.type = type;
         this.player = player;
         this.stroke = '#1012f';
@@ -47,7 +47,18 @@ export default class Hex {
 
         this.setColor(this.color);
 
-        this.attr.scurry = 3;
+        if(this.type === 'A')
+            this.attr ={scurry:true, moves:-1,canJump:false,canClimb:false} 
+        else if(this.type == 'Q')
+            this.attr ={scurry:true, moves:1,canJump:false,canClimb:false} 
+        else if(this.type == 'G')
+            this.attr ={scurry:false, moves:0,canJump:true,canClimb:false}  
+        else if(this.type == 'S')
+            this.attr ={scurry:true, moves:3,canJump:false,canClimb:false} 
+        else
+            this.attr = {scurry:false, moves:0, canJump:false, canClimb:false}
+
+        
     }
 
     // set the fill color
