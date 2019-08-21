@@ -7,13 +7,16 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import Header from '@/components/Header.vue';
+import io from "socket.io-client";
 
 @Component({
   components: {
     Header,
   },
 })
-export default class Home extends Vue {}
+export default class Home extends Vue {
+  
+}
 </script>
 
 <style>

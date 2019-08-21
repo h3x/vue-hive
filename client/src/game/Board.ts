@@ -27,9 +27,7 @@ export default class Board {
                 this.board[i][j] = null;
             }
         }
-        this.v = []
-
-        // for movement logic
+        this.v = [];
 
     }
 
