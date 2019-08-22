@@ -15,6 +15,7 @@ $d_grey: #1f2833;
 $l_grey: #c5c6c7;
 $b_green: #66fcf1;
 $d_green: #45a29e;
+$orange: orange;
 
 // Update Bulma's global variables
 $family-sans-serif: "Nunito", sans-serif;
@@ -27,6 +28,8 @@ $fullhd-enabled: false;
 
 // Update some of Bulma's component variables
 $body-background-color: $black;
+$title-color: $orange; 
+$input-placeholder-color: $l_grey;
 $control-border-width: 2px;
 $input-border-color: transparent;
 $input-shadow: none;

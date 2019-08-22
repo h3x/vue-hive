@@ -1,26 +1,27 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const express = require("express");
-const bodyparser = require("body-parser");
-const cors = require("cors");
+const socketio = require("socket.io");
 const app = express();
-const http = require("http").Server(app);
-const io = require("socket.io")(http);
-// Middleware
-app.use(bodyparser.json());
-app.use(cors());
-//app.set("port", process.env.PORT || 3000);
-const port = process.env.PORT || 5000;
-// app.get("/", (req: any, res: any) => {
-//   res.sendFile(path.resolve("./client/index.html"));
-// });
-io.on("connection", (socket) => {
-    console.log("a user connected");
+const server = app.listen(3001, () => {
+    console.log('server is running on port 3001');
 });
-http.listen(port, () => {
-    console.log(`listening on port ${port}`);
+const io = socketio(server);
+const lobby = 'lobby';
+const game = 'game';
+io.on('connection', socket => {
+    console.log(`new connection: ${socket.id}`);
+    // once a client has connected, we expect to get a ping from them saying what room they want to join
+    socket.on('room', room => {
+        socket.join(room);
+    });
+    socket.on('sendmsg' + lobby, data => {
+        console.log(data);
+        io.in(lobby).emit('msg', data);
+    });
+    socket.on('sendmsg' + game, data => {
+        console.log(data);
+        io.in(game).emit('msg', data);
+    });
 });
-// const server = app.listen(port, () => {
-//   console.log(`listening on ${port}`);
-// });
 //# sourceMappingURL=server.js.map

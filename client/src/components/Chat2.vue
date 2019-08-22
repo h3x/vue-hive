@@ -8,17 +8,17 @@
   <div class="modal-card">
     
     <section class="modal-card-body">
-      <label class="msg">Hi how are you?</label>
-      <label class="otherMsg">Hi how are you?</label>
+         <span v-for="msg in messages" :key="msg"><label class="otherMsg" >{{msg.user}}:</label><label class="msg"> {{msg.message}}</label></span>
       
-      <label class="msg">Thats great to hear. are we going to play a game or are you busy?</label>
-      <label class="otherMsg">Yeah sure i can play a game if your free. remember i won last time hehe</label>
-    </section>
+     </section>
     <footer class="modal-card-foot">
-        <textarea id='msgText' class="textarea has-fixed-size" rows='3' placeholder="Enter chat message"></textarea>
-        <button class="button is-primary is-outlined">></button>
-      <button class="button is-danger  is-outlined" @click="showChat">X</button>
-    </footer>
+        <form @submit.prevent="sendMessage">
+            <textarea id='msgText' v-model="message" class="textarea has-fixed-size" rows='3' placeholder="Enter chat message"></textarea>
+            <button type='submit' class="button is-primary is-outlined">></button>
+            <button class="button is-danger  is-outlined" @click="showChat">X</button>
+   
+        </form>
+      </footer>
   </div>
 </div>  
 
@@ -28,11 +28,47 @@
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import Menu from '@/components/Menu.vue';
- 
+import io from 'socket.io-client';
+import {Getter, namespace} from 'vuex-class';
+
 @Component
 export default class extends Vue {
 
+
+    @Getter('getLogin') getLogin:any;
+    user:string = '';
+    message:string = '';
+    socket:any = io('localhost:3001');
+    
+    
+    messages:Array<string> = [];
     chatToggle:boolean = false;
+    
+    room = 'game'
+
+   sendMessage(e:any){
+        e.preventDefault();
+        this.socket.emit('sendmsg' + this.room, {
+            user: this.getLogin.isLoggedin ? this.getLogin.username.username : 'Anon',
+            message: this.message
+        });
+        this.message = '';
+    }
+
+    mounted(){
+        this.user = this.getLogin.username
+        this.socket.on('connect', () => {
+            // Connected, let's sign-up for to receive messages for the lobby
+            this.socket.emit('room', this.room);
+        });
+
+        this.socket.on('msg', (data:any) => {
+            this.messages.push(data);
+        })
+    }
+    created(){
+        
+    }
 
     showChat(){
         this.chatToggle = !this.chatToggle;
@@ -91,11 +127,13 @@ footer {
     margin-left:2%;
 }
 
-footer > button {
+form > button {
 
     margin:auto;
     margin-left: 10px;
+    margin-top: 10px;
 }
+
 
 #msgText {
     margin: auto;
@@ -107,7 +145,7 @@ footer > button {
 .msg {
     margin-right: 4px;
     margin-left: 20px;
-    text-align: right;
+    text-align: left;
     display: block;
     color:#66fcf1;
     margin-top: 5px;

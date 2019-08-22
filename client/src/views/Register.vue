@@ -21,9 +21,17 @@
     </p>
     </div>
     <div class="field">
+    <p class="control has-icons-left">
+        <input class="input" type="password"  v-model="passwordCon" placeholder="Confirm Password">
+        <span class="icon is-small is-left">
+        <i class="fas fa-lock"></i>
+        </span>
+    </p>
+    </div>
+    <div class="field">
     <p class="control">
         <button  type="submit" class="button is-success  is-outlined">
-        Login
+        Register
         </button>
     </p>
     </div>
@@ -74,6 +82,4 @@ input[type="text"], input[type="password"] {
     margin: auto;
     margin-top: 10px;
 }
-
-
 </style>
