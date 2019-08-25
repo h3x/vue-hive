@@ -5,7 +5,13 @@
           <div class="tile">
             <div class="tile is-parent is-vertical is-8">
               <article class="tile is-child notification is-primary">
-                <Login />
+                <div v-if="!username"><Login v-on:usernameChange="username=$event"/></div>
+                <div v-else>
+                  <div class='title'>
+                    Hello {{username}}
+                  </div>
+                  <Online />
+                  </div>
               </article>
               <article class="tile is-child notification is-warning">
                 <!-- <p class="title">...tiles</p>
@@ -45,16 +51,22 @@ import { Component, Vue } from 'vue-property-decorator';
 import Header from '@/components/Header.vue';
 import Chat from '@/components/Chat.vue'
 import Login from '@/components/Login.vue'
+import Online from '@/components/Online.vue'
 import io from "socket.io-client";
+import {Getter, namespace} from 'vuex-class';
 
 @Component({
   components: {
     Header,
     Chat,
     Login,
+    Online,
   },
 })
 export default class Home extends Vue {
+  @Getter('getLogin') getLogin:any;
+  username = null;
+
   
 }
 </script>

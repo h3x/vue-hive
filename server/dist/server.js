@@ -11,17 +11,26 @@ const lobby = 'lobby';
 const game = 'game';
 io.on('connection', socket => {
     console.log(`new connection: ${socket.id}`);
-    // once a client has connected, we expect to get a ping from them saying what room they want to join
-    socket.on('room', room => {
+    // tell everyone there is a new user joining
+    socket.on('newuser', data => {
+        io.emit('newuser', data); // tell everyone there is a new user
+        console.log(`newuser ${data}`);
+    });
+    // Subscribe to a room
+    socket.on('subscribe', room => {
         socket.join(room);
+        console.log(`new subscription to: ${room}`);
     });
-    socket.on('sendmsg' + lobby, data => {
-        console.log(data);
-        io.in(lobby).emit('msg', data);
+    // send game room messages to the signed in room
+    socket.on('sendmsg', data => {
+        console.log(`sendmsg server: ${JSON.stringify(data)}`);
+        //io.emit('msg', data)
+        io.in(data.room).emit('msg', data);
     });
-    socket.on('sendmsg' + game, data => {
-        console.log(data);
-        io.in(game).emit('msg', data);
+    // send invites to the user
+    socket.on('invite', data => {
+        io.emit('inv', data);
+        console.log(`user: ${data.user}, message: ${JSON.stringify(data.message)}`);
     });
 });
 //# sourceMappingURL=server.js.map

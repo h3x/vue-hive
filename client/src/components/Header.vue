@@ -7,7 +7,7 @@
         <div class="bar3"></div>
     </div>
 
-    <div id="chat" class="navbar-end" v-bind:class="{ hidden: $route.path!=='/game'}">
+    <div id="chat" class="navbar-end" v-bind:class="{ hidden: $route.path!=='/game/'+this.$route.params.id}">
       <Chat2 />
     </div>
   </div>

@@ -34,22 +34,33 @@
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import {Getter, Action, namespace} from 'vuex-class';
-
+import { Socket } from 'vue-socket.io-extended'
 
 @Component
 export default class extends Vue {
-     username:string = '';
-     password:string = '';
+    username:string = '';
+    password:string = '';
 
-     @Action('userLogin') userLogin:any;
+    @Action('userLogin') userLogin:any;
+    @Action('addLogin') addLogin:any;
 
-     login(e:any){
+    
+    login(e:any){
         e.preventDefault();
-        this.userLogin({ username: this.username})
+        
+        this.userLogin(this.username);
+        //this.addLogin(this.username);
+
+        // event to parent element
+        this.$emit('usernameChange', this.username);
+
+        //socket
+        this.$socket.client.emit('newuser', this.username)
+        this.$socket.client.emit('subscribe', this.username)
+
         this.username = ''
         this.password = '';
-
-     }
+    }
 
 }
 

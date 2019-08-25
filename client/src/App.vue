@@ -2,19 +2,37 @@
   <div id="app">
     <Header />
     <router-view/>
+    
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import Header from '@/components/Header.vue'; // @ is an alias to /src
+import {Action} from 'vuex-class';
+import { Socket } from 'vue-socket.io-extended'
+
+  
+
+
+
 
 @Component({
   components: {
     Header,
   },
 })
-export default class App extends Vue {}
+export default class App extends Vue {  
+  
+  // socket:any = io('localhost:3001');
+  @Action('addLogin') addUser:any;
+  
+  // tell everyone your here
+  @Socket('newuser')
+      onNewuser(data:any){
+        this.addUser(data)
+  }
+}
 </script>
 
 

@@ -8,8 +8,11 @@
   <div class="modal-card">
     
     <section class="modal-card-body">
-         <span v-for="msg in messages" :key="msg"><label class="otherMsg" >{{msg.user}}:</label><label class="msg"> {{msg.message}}</label></span>
-      
+         <div class='msgContainer'>
+            <div id="messages" >
+                <span v-for="msg in messages"><label class="msg">{{msg.message}}</label><label class="otherMsg" >{{msg.user}}:</label></span>
+            </div>
+        </div>
      </section>
     <footer class="modal-card-foot">
         <form @submit.prevent="sendMessage">
@@ -31,6 +34,8 @@ import Menu from '@/components/Menu.vue';
 import io from 'socket.io-client';
 import {Getter, namespace} from 'vuex-class';
 
+import { Socket } from 'vue-socket.io-extended'
+
 @Component
 export default class extends Vue {
 
@@ -38,36 +43,35 @@ export default class extends Vue {
     @Getter('getLogin') getLogin:any;
     user:string = '';
     message:string = '';
+
+    // this has to have the local socket defined for some reason TODO: find out why when not on a deadline
     socket:any = io('localhost:3001');
     
     
     messages:Array<string> = [];
     chatToggle:boolean = false;
     
-    room = 'game'
+    room = ''
+
+    @Socket('msg')
+    onMsg(data){
+        this.messages.unshift(data);
+    }
+   
 
    sendMessage(e:any){
         e.preventDefault();
-        this.socket.emit('sendmsg' + this.room, {
-            user: this.getLogin.isLoggedin ? this.getLogin.username.username : 'Anon',
-            message: this.message
+        this.socket.emit('sendmsg', {
+            user: this.getLogin.isLoggedin ? this.getLogin.username : 'Anon',
+            message: this.message,
+            room: this.$router.currentRoute.params.id
         });
         this.message = '';
     }
 
     mounted(){
-        this.user = this.getLogin.username
-        this.socket.on('connect', () => {
-            // Connected, let's sign-up for to receive messages for the lobby
-            this.socket.emit('room', this.room);
-        });
+            
 
-        this.socket.on('msg', (data:any) => {
-            this.messages.push(data);
-        })
-    }
-    created(){
-        
     }
 
     showChat(){
@@ -82,7 +86,7 @@ export default class extends Vue {
 </script>
 
 
-<style>
+<style scoped>
 
 
 .hidden{
@@ -122,9 +126,9 @@ export default class extends Vue {
 
 footer {
     position: absolute;
-    bottom: 15px;
-    width:95%;
-    margin-left:2%;
+    bottom: 0px;
+    width:100%;
+   
 }
 
 form > button {
@@ -137,26 +141,55 @@ form > button {
 
 #msgText {
     margin: auto;
+    margin-top:10px;
     background:#0b0c10;
     color: #45a29e;
     border: 1px solid #66fcf1;
 }
 
 .msg {
-    margin-right: 4px;
+    margin-right: 20px;
     margin-left: 20px;
     text-align: left;
     display: block;
     color:#66fcf1;
     margin-top: 5px;
+    transform: rotate(180deg);
 }
 
 .otherMsg {
     text-align: left;
     margin-left: 4px;
-    margin-right: 20px;
+    margin-right: 4px;
     display: block;
     color:orange;
     margin-top: 5px;
+    transform: rotate(180deg);
 }
+
+.msgContainer{
+    position: absolute;
+    top: 0;
+    height: 60%;
+    width:100%;
+    transform: rotate(180deg);
+
+    
+    
+    
+}
+
+#messages {
+    display: block;
+    height: 60vh;
+    overflow-y: auto;
+    overflow-x: 0;
+    margin-bottom: 10px;
+    padding:1px;
+    flex-grow: 1;
+    word-wrap: break-word;
+    scrollbar-color:  #1f2833 rgba(0,0,0,0);
+    
+}
+
 </style>

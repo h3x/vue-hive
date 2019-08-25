@@ -57,7 +57,7 @@ export default class HiveApp {
 
         // initially size the canvas the same as the viewport size
         this.canvas.width = window.innerWidth * 0.95;
-        this.canvas.height = window.innerHeight * 0.9;
+        this.canvas.height = this.canvas.width * 0.5;//window.innerHeight * 0.9;
 
         this.board = new Board(this.canvas);
         this.boardState = this.board.getBoard();
@@ -274,6 +274,23 @@ export default class HiveApp {
         return null;
     }
 
+    public checkSize(){
+        window.addEventListener('resize', () => {
+            
+            this.resizeCanvas();
+        }, false);
+    }
+
+    private resizeCanvas() {
+        this.canvas.width = window.innerWidth * 0.95;
+        this.canvas.height = window.innerHeight * 0.9;
+        this.size = this.canvas.width / this.boardDims.width * 0.55;
+        this.ctx.fillStyle = '#101115';
+        this.ctx.fillRect(0,0,this.canvas.width, this.canvas.height);
+        
+        
+    }
+
     // initial game setup
     public setup() {
 
@@ -281,6 +298,7 @@ export default class HiveApp {
 
         // start the game loop
         this.clickListener();
+        this.checkSize();
         window.setInterval(() => this.draw(), 20);
 
     }
