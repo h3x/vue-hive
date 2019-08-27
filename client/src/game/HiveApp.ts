@@ -56,7 +56,7 @@ export default class HiveApp {
         this.room = room;
         this.room === undefined ? this.isOnline = false : this.isOnline = true;
         const PORT = process.env.PORT || '3001';
-        this.$Socket = io.connect('/');
+        this.$Socket = io.connect();
 
         // colors
         this.colors = {

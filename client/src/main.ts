@@ -10,7 +10,7 @@ import io from 'socket.io-client';
 
 Vue.config.productionTip = false;
 const PORT = process.env.PORT || '3001';
-const socket = io('/');
+const socket = io();
 Vue.use(VueSocketIOExt, socket, {store});
 
 new Vue({
