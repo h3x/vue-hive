@@ -27,13 +27,13 @@ export function cube_round(cube: {x: number, y: number, z: number}): {x: number,
     let ry = Math.round(cube.y);
     let rz = Math.round(cube.z);
 
-    const x_diff = Math.abs(rx - cube.x);
-    const y_diff = Math.abs(ry - cube.y);
-    const z_diff = Math.abs(rz - cube.z);
+    const xDiff = Math.abs(rx - cube.x);
+    const yDiff = Math.abs(ry - cube.y);
+    const zDiff = Math.abs(rz - cube.z);
 
-    if (x_diff > y_diff && x_diff > z_diff) {
+    if (xDiff > yDiff && xDiff > zDiff) {
         rx = -ry - rz;
-    } else if (y_diff > z_diff) {
+    } else if (yDiff > zDiff) {
         ry = -rx - rz;
     } else {
         rz = -rx - ry;
@@ -52,8 +52,8 @@ export function pixel_to_hex(x: number, y: number, size: number): [number, numbe
     const q = ( 2. / 3 * x) / size;
     const r = (-1. / 3 * x  +  Math.sqrt(3) / 3 * y) / size;
     const cube = axial_to_cube(Math.floor(q), Math.floor(r));
-    const r_cube = cube_round(cube);
-    const h =  cube_to_coord(r_cube);
+    const rCube = cube_round(cube);
+    const h =  cube_to_coord(rCube);
     return [Math.max(0, h.x), Math.max(0, h.y)]; // dirty bounds hack
 }
 

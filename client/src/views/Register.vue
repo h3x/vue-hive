@@ -46,18 +46,19 @@ import {Getter, Action, namespace} from 'vuex-class';
 
 @Component
 export default class extends Vue {
-     username:string = '';
-     password:string = '';
+    // TODO: not ready until database is connected on the back
+    //  username:string = '';
+    //  password:string = '';
 
-     @Action('userLogin') userLogin:any;
+    //  @Action('userLogin') userLogin:any;
 
-     login(e:any){
-        e.preventDefault();
-        this.userLogin({ username: this.username})
-        this.username = ''
-        this.password = '';
+    //  login(e:any){
+    //     e.preventDefault();
+    //     this.userLogin({ username: this.username})
+    //     this.username = ''
+    //     this.password = '';
 
-     }
+    //  }
 }
 
 

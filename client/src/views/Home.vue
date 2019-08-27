@@ -49,10 +49,10 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import Header from '@/components/Header.vue';
-import Chat from '@/components/Chat.vue'
-import Login from '@/components/Login.vue'
-import Online from '@/components/Online.vue'
-import io from "socket.io-client";
+import Chat from '@/components/Chat.vue';
+import Login from '@/components/Login.vue';
+import Online from '@/components/Online.vue';
+import io from 'socket.io-client';
 import {Getter, namespace} from 'vuex-class';
 
 @Component({
@@ -64,10 +64,8 @@ import {Getter, namespace} from 'vuex-class';
   },
 })
 export default class Home extends Vue {
-  @Getter('getLogin') getLogin:any;
-  username = null;
-
-  
+  @Getter('getLogin') private getLogin: any;
+  private username = null;
 }
 </script>
 

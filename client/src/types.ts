@@ -1,6 +1,6 @@
 
 export interface User {
-    username: string,
-    loggedIn :boolean,
-    token?:string
+    username: string;
+    loggedIn: boolean;
+    token?: string;
 }

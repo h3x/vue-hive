@@ -8,29 +8,23 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import Header from '@/components/Header.vue'; // @ is an alias to /src
+import Header from '@/components/Header.vue';
 import {Action} from 'vuex-class';
-import { Socket } from 'vue-socket.io-extended'
-
-  
-
-
-
+import { Socket } from 'vue-socket.io-extended';
 
 @Component({
   components: {
     Header,
   },
 })
-export default class App extends Vue {  
-  
+export default class App extends Vue {
   // socket:any = io('localhost:3001');
-  @Action('addLogin') addUser:any;
-  
+  @Action('addLogin') private addUser: any;
+
   // tell everyone your here
   @Socket('newuser')
-      onNewuser(data:any){
-        this.addUser(data)
+      private onNewuser(data: any) {
+        this.addUser(data);
   }
 }
 </script>

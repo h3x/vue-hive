@@ -34,52 +34,41 @@ import Menu from '@/components/Menu.vue';
 import io from 'socket.io-client';
 import {Getter, namespace} from 'vuex-class';
 
-import { Socket } from 'vue-socket.io-extended'
+import { Socket } from 'vue-socket.io-extended';
 
 @Component
 export default class extends Vue {
 
-
-    @Getter('getLogin') getLogin:any;
-    user:string = '';
-    message:string = '';
+    @Getter('getLogin') private getLogin: any;
+    private user: string = '';
+    private message: string = '';
 
     // this has to have the local socket defined for some reason TODO: find out why when not on a deadline
-    socket:any = io('localhost:3001');
-    
-    
-    messages:Array<string> = [];
-    chatToggle:boolean = false;
-    
-    room = ''
+    private socket: any = io('localhost:3001');
+    private messages: Array<{user: string, message: string, room: string}> = [];
+    private chatToggle: boolean = false;
+    private room = '';
 
     @Socket('msg')
-    onMsg(data){
+    private onMsg(data: {user: string, message: string, room: string}) {
         this.messages.unshift(data);
     }
-   
 
-   sendMessage(e:any){
+    private sendMessage(e: Event) {
         e.preventDefault();
         this.socket.emit('sendmsg', {
             user: this.getLogin.isLoggedin ? this.getLogin.username : 'Anon',
             message: this.message,
-            room: this.$router.currentRoute.params.id
+            room: this.$router.currentRoute.params.id,
         });
         this.message = '';
     }
 
-    mounted(){
-            
-
+    private showChat() {
+        this.chatToggle = !this.chatToggle;
     }
 
-    showChat(){
-        this.chatToggle = !this.chatToggle;
-        console.log(this.chatToggle)
-    } 
-    
-    closeChat(){
+    private closeChat() {
         this.chatToggle = false;
     }
 }

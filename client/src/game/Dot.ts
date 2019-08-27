@@ -5,7 +5,7 @@ export function draw(ctx: CanvasRenderingContext2D, center: [number, number], si
         const [lx, ly] = RB.hex_to_pixel(center[0], center[1], size);
         const [x, y] = [lx + size, ly + size];
         ctx.beginPath();
-        ctx.arc(x, y, size/5, 0, 2 * Math.PI);
+        ctx.arc(x, y, size / 5, 0, 2 * Math.PI);
         ctx.fill();
 
 }

@@ -8,30 +8,30 @@ Vue.use(Vuex);
 const store = new Vuex.Store({
   state: {
       username: 'pete',
-      loggedIn: false    
+      loggedIn: false,
   },
   getters: {
-    getLogin: state => {
-        return state.username;
-    }
-  },  
-  mutations: {
-    LOGIN:(state, username) => {
-        state.username = username;
-        state.loggedIn = true;
+    getLogin: (_state: any) => {
+        return _state.username;
     },
-    LOGOUT:(state) => {
-        state.username = '';
-        state.loggedIn = false;
-    }
+  },
+  mutations: {
+    LOGIN: (_state: any, username: string) => {
+        _state.username = username;
+        _state.loggedIn = true;
+    },
+    LOGOUT: (_state: any) => {
+        _state.username = '';
+        _state.loggedIn = false;
+    },
   },
   actions: {
-    userLogin: (context, username) => {
-        context.commit("LOGIN", username);
+    userLogin: (context: any, username: string) => {
+        context.commit('LOGIN', username);
     },
-    userLogout: (context) => {
-        context.commit("LOGOUT");
-    }
+    userLogout: (context: any) => {
+        context.commit('LOGOUT');
+    },
   },
 });
 

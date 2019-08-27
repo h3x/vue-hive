@@ -24,59 +24,52 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
+import { Component, Vue, Prop } from 'vue-property-decorator';
 import {Getter, namespace} from 'vuex-class';
 import io from 'socket.io-client';
-
-import {User} from './../types'
-
 
 @Component
 export default class extends Vue {
 
-    @Getter('getLogin') getLogin:any;
-    user:string = '';
-    loggedIn:boolean = false;
-    message:string = '';
-     // this has to have the local socket defined for some reason TODO: find out why when not on a deadline
-    
-    socket:any = io('localhost:3001');
+    @Getter('getLogin') private getLogin: any;
+    private user: string = '';
+    private loggedIn: boolean = false;
+    private message: string = '';
 
-    room = 'lobby';    
-    messages:Array<string> = [];
+    // this has to have the local socket defined for some reason TODO: find out why when not on a deadline
+    private socket: any = io('localhost:3001');
+    private room = 'lobby';
+    private messages: Array<{room: string, message: string, sender: string, game: string}> = [];
 
-    sendMessage(e:any){
+    private sendMessage(e: any) {
         e.preventDefault();
         this.socket.emit('sendmsg', {
             user: this.getLogin.isLoggedin ? this.getLogin.username : 'Anon',
             message: this.message,
-            room: 'lobby'
+            room: 'lobby',
         });
         this.message = '';
     }
 
-    mounted(){
-        
-        this.user = this.getLogin.username
+    private mounted() {
+        this.user = this.getLogin.username;
         this.socket.on('connect', () => {
             // Connected, let's sign-up for to receive messages for the lobby
             this.socket.emit('subscribe', this.room);
         });
 
-        this.socket.on('msg', (data:any) => {
-            console.log(`lobby message ${JSON.stringify(data)}`)
+        this.socket.on('msg', (data: any) => {
             this.messages.unshift(data);
         });
 
-        this.socket.on('inv', data => {
-            if(data.room === this.getLogin.username || data.sender === this.getLogin.username){
-                this.$socket.client.emit('subscribe', data.game )
+        this.socket.on('inv', (data: {room: string, message: string, sender: string, game: string}) => {
+            if (data.room === this.getLogin.username || data.sender === this.getLogin.username) {
+                this.$socket.client.emit('subscribe', data.game );
                 this.messages.unshift(data);
             }
-        })
+        });
     }
 }
-  
 </script>
 
 <style scoped>

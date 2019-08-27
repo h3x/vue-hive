@@ -48,8 +48,8 @@
     <section class="modal-card-body">
       <aside class="menu">
         <ul class="menu-list">
-            <li @click=closeAllMenus><router-link to="/game">Single Player</router-link></li>
-            <li><a>Pass and Play</a></li>
+            <li @click=closeAllMenus><a>Single Player</a></li>
+            <li><router-link to=/game>Pass and Play</router-link></li>
             <li><a>Online</a></li>
         </ul>
       </aside>
@@ -86,44 +86,43 @@
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import Menu from '@/components/Menu.vue';
 import Chat2 from '@/components/Chat2.vue';
- 
+
 @Component({components: {
     Menu,
-    Chat2
+    Chat2,
   }})
 export default class extends Vue {
 
-    menuToggle:boolean = false;
-    newGameToggle:boolean = false;
-    joinGameToggle:boolean = false;
+    private menuToggle: boolean = false;
+    private newGameToggle: boolean = false;
+    private joinGameToggle: boolean = false;
 
-    showMenu(){
-        this.menuToggle =! this.menuToggle;
+    private showMenu() {
+        this.menuToggle = !this.menuToggle;
         this.newGameToggle = false;
         this.joinGameToggle = false;
     }
- 
-    joinMenu(){
+    private joinMenu() {
         this.joinGameToggle = !this.joinGameToggle;
-        if(this.joinGameToggle) {
+        if (this.joinGameToggle) {
             this.menuToggle = false;
             this.newGameToggle = false;
-        } else{
+        } else {
             this.menuToggle = true;
         }
     }
 
-    newGameMenu(){
+    private newGameMenu() {
         this.newGameToggle = !this.newGameToggle;
-        if(this.newGameToggle) {
+        if (this.newGameToggle) {
             this.menuToggle = false;
             this.joinGameToggle = false;
-        }else{
+        } else {
             this.menuToggle = true;
         }
     }
 
-    closeAllMenus(){
+    private closeAllMenus() {
       this.newGameToggle = false;
       this.joinGameToggle = false;
       this.menuToggle = false;

@@ -38,21 +38,19 @@ import {Getter, Action, namespace} from 'vuex-class';
 
 @Component
 export default class extends Vue {
-     username:string = '';
-     password:string = '';
+     private username: string = '';
+     private password: string = '';
 
-     @Action('userLogin') userLogin:any;
+    // @ts-ignore
+     @Action('userLogin') private userLogin;
 
-     login(e:any){
+     private login(e: Event) {
         e.preventDefault();
-        this.userLogin({ username: this.username})
-        this.username = ''
+        this.userLogin({ username: this.username});
+        this.username = '';
         this.password = '';
-
      }
 }
-
-
 </script>
 
 

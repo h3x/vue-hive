@@ -1,25 +1,27 @@
 import * as RB from './RedBlob';
 
 export default class Hex {
-    public x: number;
-    public y: number;
-    public z: number;
+    public hx: number;
+    public hy: number;
     public size: number;
     public stroke: string;
     public color: string;
     public defaultColor: string;
     public corners: Array<[number, number]>;
     public inPlay: boolean;
-    public id: number;
-    public isDocked:boolean;
-    public visited:boolean;
+    public id: string;
+    public isDocked: boolean;
+    public visited: boolean;
 
     // Piece type: Queen, Ant, Beetle, Grasshopper, Spider, Ladybug, Mosquito
     // Player: White, Black
     public type: string;
     public player: 'W'|'B';
 
-    public attr:{scurry:boolean, moves:number,canJump:boolean,canClimb:boolean} 
+    public attr: {scurry: boolean, moves: number, canJump: boolean, canClimb: boolean};
+    private x: number;
+    private y: number;
+    private z: number;
 
 
     constructor(size: number, type: string, id: number, player: 'W'|'B') {
@@ -33,13 +35,16 @@ export default class Hex {
         this.corners = [];
         this.isDocked = true;
         this.visited = false;
-        
+
+        this.hx = 0;
+        this.hy = 0;
+
         this.type = type;
         this.player = player;
         this.stroke = '#1012f';
-        this.id = id;
+        this.id = this.player.toString() + this.type + id.toString();
 
-        if (this.player == 'W') {
+        if (this.player === 'W') {
             this.color = '#c5c6c7';
         } else {
             this.color = '#66fcf1';
@@ -47,18 +52,19 @@ export default class Hex {
 
         this.setColor(this.color);
 
-        if(this.type === 'A')
-            this.attr ={scurry:true, moves:-1,canJump:false,canClimb:false} 
-        else if(this.type == 'Q')
-            this.attr ={scurry:true, moves:1,canJump:false,canClimb:false} 
-        else if(this.type == 'G')
-            this.attr ={scurry:false, moves:0,canJump:true,canClimb:false}  
-        else if(this.type == 'S')
-            this.attr ={scurry:true, moves:3,canJump:false,canClimb:false} 
-        else
-            this.attr = {scurry:false, moves:0, canJump:false, canClimb:false}
+        if (this.type === 'A') {
+            this.attr = {scurry: true, moves: -1, canJump: false, canClimb: false};
+        } else if (this.type === 'Q') {
+            this.attr = {scurry: true, moves: 1, canJump: false, canClimb: false};
+        } else if (this.type === 'G') {
+                this.attr = {scurry: false, moves: 0, canJump: true, canClimb: false};
+        } else if (this.type === 'S') {
+                this.attr = {scurry: true, moves: 3, canJump: false, canClimb: false};
+        } else {
+                this.attr = {scurry: false, moves: 0, canJump: false, canClimb: false};
+        }
 
-        
+
     }
 
     // set the fill color
@@ -71,11 +77,11 @@ export default class Hex {
         this.z += z;
     }
 
-    public unDock(){
+    public unDock() {
         this.isDocked = false;
     }
 
-    public isPieceDocked(){
+    public isPieceDocked() {
         return this.isDocked;
     }
 
@@ -84,7 +90,7 @@ export default class Hex {
         this.stroke = stroke;
     }
 
-    public isMoveable(): Boolean {
+    public isMoveable(): boolean {
         return this.z >= 0;
     }
 
@@ -116,6 +122,7 @@ export default class Hex {
 
     public setLocation(x: number, y: number) {
          const [lx, ly] = RB.hex_to_pixel(x, y, this.size);
+         [this.hx, this.hy] = [x, y];
          [this.x, this.y] = [lx + this.size, ly + this.size];
     }
 
@@ -127,14 +134,14 @@ export default class Hex {
         return [this.x, this.y];
     }
 
-    public getHex(){
-        return RB.pixel_to_hex(this.x, this.y, this.size)
+    public getHex() {
+        return RB.pixel_to_hex(this.x, this.y, this.size);
     }
 
     //
     public calcCorners() {
         this.corners = [];
-        let lx, ly = 0;
+        let [lx, ly] = [0, 0];
         for (let side = 0; side < 7; side++) {
             lx = this.x + this.size * Math.cos(side * 2 * Math.PI / 6);
             ly = this.y + this.size * Math.sin(side * 2 * Math.PI / 6);
@@ -158,7 +165,7 @@ export default class Hex {
 
     public draw(ctx: CanvasRenderingContext2D, center: [number, number], gridSnap: boolean) {
         // update the locations of the corners based on the [x,y] location
-        gridSnap ? this.setLocation(center[0], center[1]) : false;
+        // gridSnap ? this.setLocation(center[0], center[1]) : false;
         this.calcCorners();
 
         ctx.strokeStyle = this.stroke;
@@ -176,10 +183,10 @@ export default class Hex {
         });
 
         // am i pretty?
-        const my_gradient = ctx.createLinearGradient(this.x, this.y, this.x + this.size, this.y + this.size);
-        my_gradient.addColorStop(0, this.color);
-        my_gradient.addColorStop(1, 'grey');
-        ctx.fillStyle = my_gradient;
+        const gradient = ctx.createLinearGradient(this.x, this.y, this.x + this.size, this.y + this.size);
+        gradient.addColorStop(0, this.color);
+        gradient.addColorStop(1, 'grey');
+        ctx.fillStyle = gradient;
         ctx.fill();
         ctx.stroke();
 
