@@ -9,20 +9,9 @@ const app = express();
 
 const PORT = process.env.PORT || 3001;
 
-// const server = express()
-//   .use((req, res) => res.sendFile(path.resolve("./../../client/dist/index.html")) )
-//   .listen(PORT, () => console.log(`Listening on ${ PORT }`));
-
 const server = express()
   .use("/", serveStatic ( path.join (__dirname, './../../client/dist') ) )
   .listen(PORT, () => console.log(`Listening on ${ PORT }`));
-
-
-// const server = app.listen(3001, () => {
-//   console.log('server is running on port 3001')
-// });
-
-//app.use(express.static(__dirname + '../../client/dist'))
 
 const io = socketio(server);
 // const lobby = 'lobby';

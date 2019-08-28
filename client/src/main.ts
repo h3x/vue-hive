@@ -9,8 +9,7 @@ import VueSocketIOExt from 'vue-socket.io-extended';
 import io from 'socket.io-client';
 
 Vue.config.productionTip = false;
-const PORT = process.env.PORT || '3001';
-const socket = io('https://boiling-wildwood-41441.herokuapp.com:' + PORT);
+const socket = io();
 Vue.use(VueSocketIOExt, socket, {store});
 
 new Vue({

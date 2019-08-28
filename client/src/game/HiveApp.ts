@@ -55,8 +55,7 @@ export default class HiveApp {
         // socket setup
         this.room = room;
         this.room === undefined ? this.isOnline = false : this.isOnline = true;
-        const PORT = process.env.PORT || '3001';
-        this.$Socket = io.connect('https://boiling-wildwood-41441.herokuapp.com/:' + PORT);
+        this.$Socket = io.connect();
 
         // colors
         this.colors = {
