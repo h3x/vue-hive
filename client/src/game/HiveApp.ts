@@ -55,7 +55,7 @@ export default class HiveApp {
         // socket setup
         this.room = room;
         this.room === undefined ? this.isOnline = false : this.isOnline = true;
-        this.$Socket = io.connect();
+        this.$Socket = io.connect('https://boiling-wildwood-41441.herokuapp.com');
 
         // colors
         this.colors = {

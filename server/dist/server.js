@@ -7,6 +7,9 @@ const path = require("path");
 const app = express();
 //const server = require('http').Server(app)
 const PORT = process.env.PORT || 3001;
+// const server = express()
+//   .use((req, res) => res.sendFile( path.join (__dirname, './../../client/dist') ) )
+//   .listen(PORT, () => console.log(`Listening on ${ PORT }`));
 const server = express()
     .use("/", serveStatic(path.join(__dirname, './../../client/dist')))
     .listen(PORT, () => console.log(`Listening on ${PORT}`));
