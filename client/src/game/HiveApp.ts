@@ -3,7 +3,7 @@ import Board from './Board';
 import * as RB from './RedBlob';
 import * as Dot from './Dot';
 import * as io from 'socket.io-client';
-import { Socket } from 'vue-socket.io-extended';
+//import { Socket } from 'vue-socket.io-extended';
 
 export default class HiveApp {
     private canvas: HTMLCanvasElement;
@@ -56,7 +56,7 @@ export default class HiveApp {
         this.room = room;
         this.room === undefined ? this.isOnline = false : this.isOnline = true;
         const PORT = process.env.PORT || '3001';
-        this.$Socket = io.connect();
+        this.$Socket = io.connect('https://boiling-wildwood-41441.herokuapp.com/');
 
         // colors
         this.colors = {
@@ -223,7 +223,7 @@ export default class HiveApp {
             this.pieces.forEach((piece) => {
                 if (this.dist([cx, cy], piece.getLocation()) < this.size &&
                     piece.isMoveable() &&
-                    (piece.getPlayer().color === this.turn || !this.isOnline)) {
+                    piece.getPlayer().color === this.turn) {
                         this.selectedHex = piece;
 
                     // normal game play
