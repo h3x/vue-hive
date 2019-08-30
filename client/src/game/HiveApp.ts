@@ -3,7 +3,6 @@ import Board from './Board';
 import * as RB from './RedBlob';
 import * as Dot from './Dot';
 import * as io from 'socket.io-client';
-//import { Socket } from 'vue-socket.io-extended';
 
 export default class HiveApp {
     private canvas: HTMLCanvasElement;
@@ -55,7 +54,9 @@ export default class HiveApp {
         // socket setup
         this.room = room;
         this.room === undefined ? this.isOnline = false : this.isOnline = true;
-        this.$Socket = io.connect('https://boiling-wildwood-41441.herokuapp.com');
+
+        this.$Socket = io.connect('http://localhost:3001');
+        // this.$Socket = io.connect('https://boiling-wildwood-41441.herokuapp.com');
 
         // colors
         this.colors = {

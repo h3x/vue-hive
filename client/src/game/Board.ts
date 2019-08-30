@@ -107,6 +107,7 @@ export default class Board {
         return n;
     }
 
+    // Returns all pieces adjacents to the supplied piece
     public getAdjacentPieces(p: Hex, pieces: Hex[]): Hex[] {
         const [x, y] = p.getHex();
         const allNeighbours = this.getNeighbours(x, y);
@@ -123,8 +124,6 @@ export default class Board {
 
     // check that moving a piece doesnt violate the one hive rule
     public oneHive(p: Hex, pieces: Hex[]): boolean {
-
-        const visited = [];
         const t = [];
 
         // clone pieces array except for the piece in question
@@ -134,7 +133,7 @@ export default class Board {
                 continue;
             } else if (!pieces[i].isPieceDocked()) {
                 _pieces.push(pieces[i]);
- }
+            }
         }
 
         // start the check at the first piece
@@ -164,17 +163,18 @@ export default class Board {
 
 
 
-    public floodFillPrep(nx: number, ny: number): void {
-        for (let i = 0; i < this.boardDims.height; i++) {
-            for (let j = 0; j < this.boardDims.width; j++) {
-                if (this.board[i][j] === 'move') {
-                    this.board[i][j] = null;
-                }
-            }
-        }
-    }
+    // public floodFillPrep(nx: number, ny: number): void {
+    //     for (let i = 0; i < this.boardDims.height; i++) {
+    //         for (let j = 0; j < this.boardDims.width; j++) {
+    //             if (this.board[i][j] === 'move') {
+    //                 this.board[i][j] = null;
+    //             }
+    //         }
+    //     }
+    // }
 
 
+    // Returns all neighbors not occupiecd by a piece
     public getLegalNeighbors(p: Hex): Array<[number, number]> {
         const [hx, hy] = p.getHex();
 
@@ -208,6 +208,7 @@ export default class Board {
         return legalMoves;
     }
 
+    // Returns the piece at a given coodinate
     public getPieceAt(x: number, y: number, pieces: Hex[]): Hex[]|null {
         const q = [];
         for (let i = 0; i < pieces.length; i++) {
@@ -222,6 +223,7 @@ export default class Board {
         return null;
     }
 
+    // returns the positions for placing a new piece
     public newPiece(p: Hex, pieces: Hex[]): Array<[number, number]> {
       // const onBoard:Array<[number, number]> = []
        const t = [];
@@ -233,6 +235,7 @@ export default class Board {
 
     }
 
+        // Returns the moves around the hive
     public getScurryMoves(p: Hex, moves: number, pieces: Hex[] ): Array<[number, number]> {
         if (this.oneHive(p, pieces)) {
             return [];
@@ -249,12 +252,12 @@ export default class Board {
             return this.getSingleMove(p, pieces);
         } else if (moves === 3) {
             return this.getSpiderMoves(p, pieces);
- } else {
-            return allTileNeighbors.flatMap((el) => el);
- }
-
+        } else {
+                    return allTileNeighbors.flatMap((el) => el);
+        }
     }
 
+    // Returns moves for the grasshopper
     public getJumpMoves(p: Hex, pieces: Hex[]): Array<[number, number]> {
         if (this.oneHive(p, pieces)) {
             return [];
@@ -348,6 +351,8 @@ export default class Board {
         return newArr;
 
     }
+
+    // Returns the legal moves for a single move
     private getSingleMove(p: Hex, pieces: Hex[]): Array<[number, number]> {
         const [x, y] = p.getHex();
         const neighbours = this.getNeighbours(x, y);
@@ -355,6 +360,8 @@ export default class Board {
         return this.intersection(neighbours, scurry);
     }
 
+
+    // Returns 3 moves to the left and 3 moves to the right TODO: this doenst quite work. fix this.
     private getSpiderMoves(p: Hex, pieces: Hex[]): Array<[number, number]> {
         const firstMove = this.getSingleMove(p, pieces);
         // const firstMove = this.getLegalNeighbors(p)

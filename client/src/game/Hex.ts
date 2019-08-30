@@ -73,6 +73,7 @@ export default class Hex {
         this.defaultColor = color;
     }
 
+    // TODO:
     public setZ(z: number) {
         this.z += z;
     }
@@ -126,19 +127,22 @@ export default class Hex {
          [this.x, this.y] = [lx + this.size, ly + this.size];
     }
 
+    // Force the piece to the supplied coords
     public forceLocation(x: number, y: number) {
         [this.x, this.y] = [x, y];
     }
 
+    // Returns the pixel coords of the piece
     public getLocation(): [number, number] {
         return [this.x, this.y];
     }
 
+    // Returns the hex coords of the piece
     public getHex() {
         return RB.pixel_to_hex(this.x, this.y, this.size);
     }
 
-    //
+    // returns the pixel coords of the corners of the shape
     public calcCorners() {
         this.corners = [];
         let [lx, ly] = [0, 0];
@@ -147,11 +151,6 @@ export default class Hex {
             ly = this.y + this.size * Math.sin(side * 2 * Math.PI / 6);
             this.corners.push([lx, ly]);
         }
-    }
-
-    // dont know what to do with this yet. whatever needs updating
-    public update() {
-        //
     }
 
     // event when the object is clicked

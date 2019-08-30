@@ -44,8 +44,9 @@ export default class extends Vue {
     private message: string = '';
 
     // this has to have the local socket defined for some reason TODO: find out why when not on a deadline
-    private PORT = process.env.PORT || '3001';
-    private socket: any = io('https://boiling-wildwood-41441.herokuapp.com');
+    private socket: any = io.connect('http://localhost:3001');
+    //private socket: any = io('https://boiling-wildwood-41441.herokuapp.com');
+
     private messages: Array<{user: string, message: string, room: string}> = [];
     private chatToggle: boolean = false;
     private room = '';
