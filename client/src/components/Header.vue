@@ -22,7 +22,7 @@
         <p class="menu-label">General</p>
         <ul class="menu-list">
             <li><a>Dashboard</a></li>
-            <li @click=closeAllMenus><router-link to="/login" >Login</router-link></li>
+            <li @click=closeAllMenus ><router-link to="/login" >Login</router-link></li>
         </ul>
         <p class="menu-label">Game</p>
         <ul class="menu-list">

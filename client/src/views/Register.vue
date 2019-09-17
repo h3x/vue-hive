@@ -1,6 +1,7 @@
 <template>
 <div class="background">
-    <form @submit.prevent='login'>
+    
+    <form @submit.prevent='register'>
     <div class="field">
     <p class="control has-icons-left has-icons-right">
         <input class="input" type="text" v-model="username" placeholder="Username">
@@ -36,29 +37,57 @@
     </p>
     </div>
     </form>
+
+    <div v-if="error" class="notification is-danger">
+       
+        {{error}}
+    </div>
 </div>
 </template>
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
-import {Getter, Action, namespace} from 'vuex-class';
+import { Getter, Action, namespace} from 'vuex-class';
+import { INewUser } from '../../../types';
+import axios from 'axios';
 
 
 @Component
 export default class extends Vue {
-    // TODO: not ready until database is connected on the back
-    //  username:string = '';
-    //  password:string = '';
+    private username: string = '';
+    private password: string = '';
+    private passwordCon: string = '';
+    private server = process.env.IP + process.env.PORT;
+    private error = '';
 
-    //  @Action('userLogin') userLogin:any;
+    // @Action('userLogin') private userLogin: any;
 
-    //  login(e:any){
-    //     e.preventDefault();
-    //     this.userLogin({ username: this.username})
-    //     this.username = ''
-    //     this.password = '';
+     private register(e: Event) {
+        e.preventDefault();
 
-    //  }
+        const newUser: INewUser = {
+            name: this.username,
+            password: this.password,
+            token: '',
+        };
+
+        if (this.password === this.passwordCon) {
+            axios.post('http://localhost:3001/api/signup', newUser)
+            .then((res) => {
+                    this.error = '';
+                    this.$router.push('/');
+                },
+                (err) => {
+                    this.error = 'Username in use. Please choose a different username';
+                });
+        } else {
+            this.error = 'Passwords do not match';
+        }
+
+        this.username = '';
+        this.password = '';
+        this.passwordCon = '';
+     }
 }
 
 
@@ -71,6 +100,7 @@ export default class extends Vue {
 
 form{
     padding-top: 20%;
+    margin-bottom: 20px;
 }
 
 input[type="text"], input[type="password"] {
@@ -82,5 +112,10 @@ input[type="text"], input[type="password"] {
     width: 50%;
     margin: auto;
     margin-top: 10px;
+}
+
+.notification{
+    width:50%;
+    margin: auto;
 }
 </style>

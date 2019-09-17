@@ -33,39 +33,60 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
-import {Getter, Action, namespace} from 'vuex-class';
 import { Socket } from 'vue-socket.io-extended';
+import {Getter, Action, namespace} from 'vuex-class';
+import axios from 'axios';
+import { ConnectionOptions } from 'tls';
 
 @Component
-export default class extends Vue {
+export default class LoginComponent extends Vue {
     private username: string = '';
     private password: string = '';
+    private error: string = '';
+    private server = process.env.SERVER as ConnectionOptions;
 
     // @ts-ignore
     @Action('userLogin') private userLogin: any;
     // @ts-ignore
     @Action('addLogin') private addLogin: any;
+
+
     private login(e: Event) {
         e.preventDefault();
-        this.userLogin(this.username);
-        // this.addLogin(this.username);
+        console.log('login component')
+        this.error = '';
+        const user = {
+            name: this.username,
+            password: this.password,
+        };
 
-        // event to parent element
-        this.$emit('usernameChange', this.username);
+        axios.post('http://localhost:3001/api/login', user)
+        .then((res) => {
+            console.log('login success');
+            // set local token
+            localStorage.setItem('token', res.data.token);
 
-        // socket
-        this.$socket.client.emit('newuser', this.username);
-        this.$socket.client.emit('subscribe', this.username);
+            // emit usename change to parent component
+            this.$emit('usernameChange', this.username);
+            
+            // save verified username to local state TODO: make better
+            this.userLogin(this.username);
 
-        this.username = '';
-        this.password = '';
+            // socket
+            this.$socket.client.emit('newuser', this.username);
+            this.$socket.client.emit('subscribe', this.username);
+
+            this.username = '';
+            this.password = '';
+            this.$router.push('/');
+        })
+        .catch((err) => {
+            console.log(err);
+            this.error = 'Invalid Credentials';
+        });
     }
 }
 </script>
-
-
-
-
 <style scoped>
 
 form{

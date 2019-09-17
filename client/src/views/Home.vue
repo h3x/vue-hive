@@ -1,19 +1,20 @@
 <template>
   <div class="background">
-      <div class="tile is-ancestor">
+      <div class="tile is-ancestor" >
         <div class="tile is-vertical">
           <div class="tile">
             <div class="tile is-parent is-vertical is-8">
-              <article class="tile is-child notification is-primary">
-                <div v-if="!username"><Login v-on:usernameChange="username=$event"/></div>
+              <article class="tile is-child is-primary">
+                <div v-if="!username" :key='token'><LoginComponent v-on:usernameChange="username=$event"/></div>
                 <div v-else>
                   <div class='title'>
-                    Hello {{username}}
+                    Hello {{username}} 
+                    <button @click='logout'>Logout</button>
                   </div>
                   <Online />
                   </div>
               </article>
-              <article class="tile is-child notification is-warning">
+              <article class="tile is-child is-warning">
                 <!-- <p class="title">...tiles</p>
                 <p class="subtitle">Bottom tile</p> -->
               </article>
@@ -50,22 +51,44 @@
 import { Component, Vue } from 'vue-property-decorator';
 import Header from '@/components/Header.vue';
 import Chat from '@/components/Chat.vue';
-import Login from '@/components/Login.vue';
+import LoginComponent from '@/components/Login.vue';
 import Online from '@/components/Online.vue';
 import io from 'socket.io-client';
-import {Getter, namespace} from 'vuex-class';
+import axios from 'axios';
+import { Socket } from 'vue-socket.io-extended';
 
 @Component({
   components: {
     Header,
     Chat,
-    Login,
+    LoginComponent,
     Online,
   },
 })
 export default class Home extends Vue {
-  @Getter('getLogin') private getLogin: any;
-  private username = null;
+  private username = '';
+  private token = localStorage.getItem('token');
+
+  private created() { if(localStorage.getItem('token')) this.loggedIn(); }
+  private loggedIn() {
+    if (localStorage.getItem('token')) {
+      axios.get('http://localhost:3001/api/user', { headers: { token: localStorage.getItem('token')}})
+        .then((res) => {
+            this.username = res.data.user.name;
+        })
+        .catch();
+      }
+  }
+
+  private logout() {
+    axios.post('http://localhost:3001/api/logout', {name: this.username})
+      .then((res) => {
+        localStorage.clear();
+        this.$socket.client.emit('logout', {user: this.username});
+        this.username = '';
+      })
+      .catch( (err) => console.log('problem logging out'));
+    }
 }
 </script>
 
