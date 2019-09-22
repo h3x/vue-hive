@@ -81,7 +81,6 @@ export default class LoginComponent extends Vue {
             this.$router.push('/');
         })
         .catch((err) => {
-            console.log(err);
             this.error = 'Invalid Credentials';
         });
     }

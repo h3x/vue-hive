@@ -50,6 +50,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 import { Getter, Action, namespace} from 'vuex-class';
 import { INewUser } from '../../../types';
 import axios from 'axios';
+import { newUserService } from '../service'
 
 
 @Component
@@ -57,7 +58,6 @@ export default class extends Vue {
     private username: string = '';
     private password: string = '';
     private passwordCon: string = '';
-    private server = process.env.IP + process.env.PORT;
     private error = '';
 
     // @Action('userLogin') private userLogin: any;
@@ -72,14 +72,10 @@ export default class extends Vue {
         };
 
         if (this.password === this.passwordCon) {
-            axios.post('http://localhost:3001/api/signup', newUser)
-            .then((res) => {
-                    this.error = '';
-                    this.$router.push('/');
-                },
-                (err) => {
-                    this.error = 'Username in use. Please choose a different username';
-                });
+            newUserService(newUser)
+              .then( ()=> this.$router.push('/'))
+              .catch((err:string) => this.error = err);
+
         } else {
             this.error = 'Passwords do not match';
         }

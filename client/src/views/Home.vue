@@ -5,7 +5,9 @@
           <div class="tile">
             <div class="tile is-parent is-vertical is-8">
               <article class="tile is-child is-primary">
-                <div v-if="!username" :key='token'><LoginComponent v-on:usernameChange="username=$event"/></div>
+                <div v-if="!username" :key='token'><LoginComponent v-on:usernameChange="username=$event"/>
+                  <div v-if="error" class="notification is-danger">{{error}}</div>
+                </div>
                 <div v-else>
                   <div class='title'>
                     Hello {{username}} 
@@ -56,6 +58,7 @@ import Online from '@/components/Online.vue';
 import io from 'socket.io-client';
 import axios from 'axios';
 import { Socket } from 'vue-socket.io-extended';
+import { loggedInService, logoutService } from '../service';
 
 @Component({
   components: {
@@ -67,27 +70,25 @@ import { Socket } from 'vue-socket.io-extended';
 })
 export default class Home extends Vue {
   private username = '';
-  private token = localStorage.getItem('token');
+  private error = '';
+  private token:string = '';
 
   private created() { if(localStorage.getItem('token')) this.loggedIn(); }
   private loggedIn() {
-    if (localStorage.getItem('token')) {
-      axios.get('http://localhost:3001/api/user', { headers: { token: localStorage.getItem('token')}})
-        .then((res) => {
-            this.username = res.data.user.name;
-        })
-        .catch();
-      }
+    this.token = localStorage.getItem('token') || '';
+    loggedInService(localStorage.getItem('token'))
+      .then( (uname:string) => this.username = uname)
+      .catch( (err:string) => this.error = err);
+      
   }
 
   private logout() {
-    axios.post('http://localhost:3001/api/logout', {name: this.username})
-      .then((res) => {
-        localStorage.clear();
+    logoutService(this.username)
+      .then(()=> {
         this.$socket.client.emit('logout', {user: this.username});
         this.username = '';
       })
-      .catch( (err) => console.log('problem logging out'));
+      .catch(err => this.error = err.response);
     }
 }
 </script>
