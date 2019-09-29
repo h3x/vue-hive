@@ -1,107 +1,46 @@
 <template>
-  <div class="background">
-      <div class="tile is-ancestor" >
-        <div class="tile is-vertical">
-          <div class="tile">
-            <div class="tile is-parent is-vertical is-8">
-              <article class="tile is-child is-primary">
-                <div v-if="!username" :key='token'><LoginComponent v-on:usernameChange="username=$event"/>
-                  <div v-if="error" class="notification is-danger">{{error}}</div>
-                </div>
-                <div v-else>
-                  <div class='title'>
-                    Hello {{username}} 
-                    <button @click='logout'>Logout</button>
-                  </div>
-                  <Online />
-                  </div>
-              </article>
-              <article class="tile is-child is-warning">
-                <!-- <p class="title">...tiles</p>
-                <p class="subtitle">Bottom tile</p> -->
-              </article>
-            </div>
-            <!-- <div class="tile is-parent">
-              <article class="tile is-child notification is-info">
-                <p class="title">Middle tile</p>
-                <p class="subtitle">With an image</p>
-                <figure class="image is-4by3">
-                  <img src="https://bulma.io/images/placeholders/640x480.png">
-                </figure>
-              </article>
-            </div> -->
-          </div>
-          
-        </div>
-        <div class="tile is-parent is-vertical is-6">
-          <article class="tile is-child">
-            <div class="content">
-              
-              
-              <div class="content">
-                <!-- Content -->
-                <Chat />
-              </div>
-            </div>
-          </article>
-        </div>
-      </div>
+  <div class='background'> 
+      <label class='catagory' v-if='unFinishedGames.length === 0'>No unfinshed games</label>
+      <ul>
+         <li v-for="game in unFinishedGames">
+            <router-link  :to="'game/'+game.gameID" >
+            <span class="catagory">GameID: </span> <span class='info'>{{ game.gameID }} </span>
+            <span class="catagory">Opponent: </span> <span class='info' v-if='game.whitePlayer === username'>{{ game.blackPlayer}} </span><span class='info' v-else>{{ game.whitePlayer}} </span>
+            <span class="catagory">Move Count: </span> <span class='info'>{{game.moves.length}} </span>
+            </router-link >
+        </li> 
+</ul>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
-import Header from '@/components/Header.vue';
-import Chat from '@/components/Chat.vue';
-import LoginComponent from '@/components/Login.vue';
-import Online from '@/components/Online.vue';
-import io from 'socket.io-client';
-import axios from 'axios';
-import { Socket } from 'vue-socket.io-extended';
-import { loggedInService, logoutService } from '../service';
-import { Action } from 'vuex-class';
+import { Component, Vue, Prop } from 'vue-property-decorator';
+import { getUnfinishedGamesService, getMyUsernameService } from '../service';
+import { Getter } from 'vuex-class';
 
-@Component({
-  components: {
-    Header,
-    Chat,
-    LoginComponent,
-    Online,
-  },
-})
-export default class Home extends Vue {
-  private username = '';
-  private error = '';
-  private token: string|null = '';
+@Component
+export default class Game extends Vue {
+    private unFinishedGames = [];
+    private username: string = '';
 
-  // @ts-ignore
-  @Action('userLogin') private userLoginStore;
+    // @ts-ignore
+    @Getter('getLogin') private user;
 
-  private mounted() { if (localStorage.getItem('token')) { this.loggedIn(); } }
 
-  private loggedIn() {
-    this.token = localStorage.getItem('token');
-    loggedInService(localStorage.getItem('token'))
-      .then( (uname: string) => {
-        this.userLoginStore(uname);
-        this.$socket.client.emit('newuser', uname);
-        this.username = uname;
-      })
-      .catch( (err: string) => this.error = err);
-  }
-
-  private logout() {
-    logoutService(this.username)
-      .then(() => {
-        this.$socket.client.emit('logout', {user: this.username});
-        this.username = '';
-      })
-      .catch((err: string) => this.error = err);
+private mounted() {
+        if ( localStorage.getItem('token')) {
+            getMyUsernameService(localStorage.getItem('token') || '')
+             .then((res: any) => this.username = res.user)
+             .then(() => {
+                 getUnfinishedGamesService(this.username)
+                .then((res: any) => this.unFinishedGames = res.data.games );
+             });
+        }
     }
 }
 </script>
 
-<style>
+<style scoped>
 .background {
   height: 90vh;
   padding: 10px;
@@ -110,16 +49,16 @@ export default class Home extends Vue {
   background-attachment: fixed;
   background-size: cover;
 }
-.tile{
-  height:100%;
 
+.info {
+    color:#66fcf1;
+    margin-top: 10px;
 }
 
-.tile .is-child{
-  border: 1px black solid;
+.catagory {
+    margin-left: 5px;
+    color:orange;
 }
 
-._title {
-  color: #66fcf1;
-}
+
 </style>

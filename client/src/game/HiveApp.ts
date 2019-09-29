@@ -3,22 +3,21 @@ import Board from './Board';
 import * as RB from './RedBlob';
 import * as Dot from './Dot';
 import * as io from 'socket.io-client';
+import { getBoardService, gameFinishedService, getMyUsernameService, getUnfinishedGamesService } from '../service';
+import Axios, { AxiosResponse } from 'axios';
 
 export default class HiveApp {
     private canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D;
     private $Socket: SocketIOClientStatic['Socket'];
 
-
     // tile size
     private size: number;
 
-    //
     private heightSpace: number;
     private widthSpace: number;
     private whiteQueen: Hex;
     private blackQueen: Hex;
-
 
     private colors: {
         black: string,
@@ -43,9 +42,9 @@ export default class HiveApp {
     private previousLocation: [number, number]|null;
     private room: string;
     private playerColor: 'W'|'B';
+    private me: string | null;
 
-
-    constructor(canvas: HTMLElement, room: string) {
+    constructor(canvas: HTMLElement, room: string, me: string | null) {
 
         // canvas initaliser
         this.canvas = canvas as HTMLCanvasElement;
@@ -53,7 +52,9 @@ export default class HiveApp {
 
         // socket setup
         this.room = room;
-        this.room === undefined ? this.isOnline = false : this.isOnline = true;
+        this.isOnline = this.room ? true : false;
+        //this.room === undefined ? this.isOnline = false : this.isOnline = true;
+        this.me = me;
 
         this.$Socket = io.connect('http://localhost:3001');
         // this.$Socket = io.connect('https://boiling-wildwood-41441.herokuapp.com');
@@ -105,6 +106,8 @@ export default class HiveApp {
         } else {
             this.turn = 'W';
         }
+
+        console.log('next player: ' + this.turn)
         this.moveCount++;
     }
 
@@ -126,29 +129,80 @@ export default class HiveApp {
         }, false);
     }
 
-
     // initial game setup
     public setup() {
-
-        // if game is online
-        if (this.isOnline) {
-            // resubscribe to the room
-            this.$Socket.emit('subscribeGame', this.room);
-
-            // get player color
-            this.$Socket.on('player', (color: 'W'|'B') => {
-                this.playerColor = color;
-                // as soon as you recievce the color assignment, stop listening for another color assignment
-                this.$Socket.removeListener('player');
-            });
-
-            // socket listener for game data // TODO: extract this into its own function out of the setup function
-            this.socketListener();
-        }
 
         this.setupPieces();
         this.clickListener();
         this.checkSize();
+
+        console.log('is online: ' + this.isOnline)
+
+        // check if this game is an existing game and rebuild pieces
+        if ( localStorage.getItem('token') && this.isOnline) {
+            getMyUsernameService(localStorage.getItem('token') || '')
+             .then((res: any) => this.me = res.user)
+             .then(() => {
+                if (this.me) {
+                    let found = false;
+                    getUnfinishedGamesService(this.me).then((res: any) => res.data.games.forEach((game: any) => {
+                        // if previosly played game
+                        if (this.room === game.gameID) {
+                            console.log('runnnnn')
+                            this.$Socket.emit('invite', {
+                                user: 'Admin',
+                                message: 'You have been invited to finished your game with ' + this.me,
+                                room: game.whitePlayer,
+                                game: this.room,
+                                sender: game.blackPlayer,
+                            });
+                            found = true;
+                            const last = game.moves.pop();
+                            this.playerColor = this.me === game.whitePlayer ? 'W' : 'B';
+                            this.turn = last.player === 'B' ? 'W' : 'B';
+                            
+                                for(let i = 0; i < last.data.length; i++){
+                                    for (let j = 0; j < this.pieces.length; j++) {
+                                        if (last.data[i].id === this.pieces[j].id) {
+                                            this.moveCount++;
+                                            if(this.pieces[j].id === 'WQ0'){
+                                                this.board.queenPlayed.W = true;
+                                            }
+                                            if(this.pieces[j].id === 'BQ0'){
+                                                this.board.queenPlayed.B = true;
+                                            }
+                                            this.pieces[j].pieceInPlay(true);
+                                            this.pieces[j].unDock();
+                                            console.log(`hx: ${last.data[i].hx}, hy: ${last.data[i].hy}`)
+                                            this.board.move(this.pieces[j], last.data[i].hx, last.data[i].hy, [this.pieces[j].hx, this.pieces[j].hy]);
+                                        }
+                                    }
+                                }
+                        }
+                        
+                    }))
+                    .then(() => {
+                        this.socketListener();
+                        this.$Socket.emit('subscribe', this.me)
+                    });
+                
+
+                // if not previously played game
+                if(!found){
+                    this.socketListener();
+                    // get player color
+                    this.$Socket.on('player', (color: 'W'|'B') => {
+                        this.playerColor = color;
+                        // as soon as you recievce the color assignment, stop listening for another color assignment
+                        this.$Socket.removeListener('player');
+                    });
+                    // resubscribe to the room
+                    this.$Socket.emit('subscribeGame', {room: this.room, player: this.me});
+                }
+                }
+             });
+        }
+        
 
         // start the game loop
         window.setInterval(() => this.draw(), 20);
@@ -157,20 +211,20 @@ export default class HiveApp {
 
     // the draw loop
     public draw() {
-        // clear the screen on every frame
-        this.ctx.fillStyle = this.colors.black;
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        if (this.turn) {
+            // clear the screen on every frame
+            this.ctx.fillStyle = this.colors.black;
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-        this.checkWin();
+            this.checkWin();
 
-        // Draw legal moves
-        this.legalMoves.forEach((pos) => Dot.draw(this.ctx, pos, this.size));
+            // Draw legal moves
+            this.legalMoves.forEach((pos) => Dot.draw(this.ctx, pos, this.size));
 
-        // Draw pieces
-        this.pieces.forEach((p) => p.draw(this.ctx, p.getHex(), true));
+            // Draw pieces
+            this.pieces.forEach((p) => p.draw(this.ctx, p.getHex(), true));
+        }
     }
-
-
 
     // simple distance calculator
     private dist(p1: [number, number], p2: [number, number]) {
@@ -197,24 +251,24 @@ export default class HiveApp {
 
     private socketListener() {
         this.$Socket.on('game', (data: any) => {
-            // loop throught the board
-            for (let i = 0; i < data.length; i++) {
-                for (let j = 0; j < data[i].length; j++) {
-                    // if no piece on this hex, skip
-                    if (data[i][j] === null) {
-                        continue;
-                    } else {
-                        // find the right piece and move it there
-                        for (let k = 0; k < this.pieces.length; k++) {
-                            if (data[i][j].id === this.pieces[k].id) {
-                                this.board.move(this.pieces[k], data[i][j].hx, data[i][j].hy);
-                                this.pieces[k].unDock();
-                            }
+
+            // TODO: this is where im up to
+            getBoardService(this.room)
+             .then((res: AxiosResponse) => {
+                // console.log(`board from server ${JSON.stringify(res.data)}`);
+                for (let i = 0; i < res.data.length; i++) {
+                    for (let j = 0; j < this.pieces.length; j++) {
+                        if (res.data[i].id === this.pieces[j].id) {
+                            this.pieces[j].pieceInPlay(true);
+                            this.pieces[j].unDock();
+                            this.board.move(this.pieces[j], res.data[i].hx, res.data[i].hy, [this.pieces[j].hx, this.pieces[j].hy]);
                         }
                     }
                 }
-            }
-            this.nextPlayer();
+             }).then( () => {
+                    this.board.refreshBoard();
+                    this.nextPlayer();
+                });
         });
     }
 
@@ -246,7 +300,7 @@ export default class HiveApp {
                                 this.legalMoves = this.board.getScurryMoves(this.selectedHex, this.selectedHex.attr.moves, this.pieces);
                             } else if (this.selectedHex.attr.canJump) {
                                 this.legalMoves = this.board.getJumpMoves(this.selectedHex, this.pieces);
- }
+                            }
                         }
                     } else {
                         if (this.turn && this.selectedHex.type === 'Q') {
@@ -261,7 +315,6 @@ export default class HiveApp {
             });
         }
     }
-
 
     private secondClick(cx: number, cy: number) {
         if (this.selectedHex) {
@@ -280,8 +333,6 @@ export default class HiveApp {
                 const bx = Math.min(px, this.boardDims.width);
                 const by = Math.min(py, this.boardDims.height);
                 this.board.move(this.selectedHex, bx, by, [hx, hy]); // dirty bounds hack
-
-
             }
         }
 
@@ -291,7 +342,9 @@ export default class HiveApp {
             this.selectedHex.unDock();
 
             if (this.isOnline) {
-                this.$Socket.emit('game', this.board.getBoard(), this.room);
+                // his.$Socket.emit('game', this.board.getBoard(), this.room, this.playerColor);
+                const currentState = this.pieces.filter((el: Hex) => el.inPlay).map((el: Hex) => ({id: el.id, hx: el.hx, hy: el.hy}) );
+                this.$Socket.emit('game', currentState, this.room, this.playerColor);
             } else {
                 this.nextPlayer();
             }
@@ -299,7 +352,6 @@ export default class HiveApp {
 
         this.legalMoves = [];
         this.selectedHex = null;
-
     }
 
     // check if the white queen or the black queen have been surrounded
@@ -307,19 +359,26 @@ export default class HiveApp {
     private checkWin() {
 
         if (this.board.getAdjacentPieces(this.whiteQueen, this.pieces).length > 5) {
-            this.ctx.fillStyle = this.blackQueen.color;
-            this.ctx.font = '48px serif';
-            this.ctx.fillText('Black wins!', Math.floor(this.canvas.width / 2), 60);
-            this.turn = null;
+            gameFinishedService(this.room, 'black')
+             .then( () => {
+                this.ctx.fillStyle = this.blackQueen.color;
+                this.ctx.font = '48px serif';
+                this.ctx.fillText('Black wins!', Math.floor(this.canvas.width / 2), 60);
+                this.turn = null;
+             })
+             .catch( (err) => this.turn = null );
+
         }
         if (this.board.getAdjacentPieces(this.blackQueen, this.pieces).length > 5) {
-            this.ctx.fillStyle = this.whiteQueen.color;
-            this.ctx.font = '48px serif';
-            this.ctx.fillText('White wins!', 10, 50);
-            this.turn = null;
+            gameFinishedService(this.room, 'white')
+             .then( () => {
+                this.ctx.fillStyle = this.whiteQueen.color;
+                this.ctx.font = '48px serif';
+                this.ctx.fillText('White wins!', 10, 50);
+                this.turn = null;
+            })
+            .catch( (err) => this.turn = null );
         }
-
-
     }
 
     // check the queen has been moved in the first 4 pieces
@@ -343,12 +402,12 @@ export default class HiveApp {
             this.board.move(selectedHex, 14, 6);
         }
         if (this.isOnline) {
-            this.$Socket.emit('game', this.board.getBoard(), this.room, this.playerColor);
+            const currentState = this.pieces.filter((el: Hex) => el.inPlay).map((el: Hex) => ({id: el.id, hx: el.hx, hy: el.hy}));
+            this.$Socket.emit('game', currentState, this.room, this.playerColor);
         } else {
             this.nextPlayer();
         }
     }
-
 
     // TODO: make this work properly and less hack
     private resizeCanvas() {
@@ -357,10 +416,7 @@ export default class HiveApp {
         this.size = this.canvas.width / this.boardDims.width * 0.55;
         this.ctx.fillStyle = '#101115';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-
     }
-
 
     // TODO: extract this into something more better when theres time
     private setupPieces() {

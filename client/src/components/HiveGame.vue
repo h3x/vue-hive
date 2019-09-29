@@ -7,9 +7,12 @@
 <script lang="ts">
 import { Component, Vue, Prop } from 'vue-property-decorator';
 import HiveApp from '@/game/HiveApp';
+import {Getter} from 'vuex-class';
+
 Vue.directive('canvas', {
     bind(el, binding, vnode) {
-        const hive = new HiveApp(el, binding.value);
+        const username = localStorage.getItem('name');
+        const hive = new HiveApp(el, binding.value, username);
         hive.setup();
     },
 });

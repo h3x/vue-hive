@@ -253,7 +253,7 @@ export default class Board {
         } else if (moves === 3) {
             return this.getSpiderMoves(p, pieces);
         } else {
-                    return allTileNeighbors.flatMap((el) => el);
+            return allTileNeighbors.flatMap((el) => el);
         }
     }
 

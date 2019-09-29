@@ -26,6 +26,7 @@
 <script lang="ts">
 import { Component, Vue, Prop } from 'vue-property-decorator';
 import {Getter, namespace} from 'vuex-class';
+import { origin } from '../service';
 import io from 'socket.io-client';
 
 @Component
@@ -36,19 +37,24 @@ export default class extends Vue {
     private loggedIn: boolean = false;
     private message: string = '';
 
-    // this has to have the local socket defined for some reason TODO: find out why when not on a deadline
-    private socket: any = io.connect('http://localhost:3001');
+    // this has to have the local socket defined for some reason
+    private socket: any = io.connect(origin());
     // private socket: any = io('https://boiling-wildwood-41441.herokuapp.com');
     private room = 'lobby';
     private messages: Array<{room: string, message: string, sender: string, game: string}> = [];
 
     private sendMessage(e: any) {
         e.preventDefault();
-        this.socket.emit('sendmsg', {
-            user: this.getLogin.isLoggedin ? this.getLogin.username : 'Anon',
-            message: this.message,
-            room: 'lobby',
-        });
+        if ( this.message === '/clear') {
+            this.messages = [];
+        } else {
+            this.socket.emit('sendmsg', {
+                user: this.getLogin.isLoggedin ? this.getLogin.username : 'Anon',
+                message: this.message,
+                room: 'lobby',
+            });
+        }
+
         this.message = '';
     }
 
@@ -63,8 +69,8 @@ export default class extends Vue {
             this.messages.unshift(data);
         });
 
-        this.socket.on('inv', (data: {room: string, message: string, sender: string, game: string}) => {
-            if (data.room === this.getLogin.username || data.sender === this.getLogin.username) {
+        this.socket.on('inv', (data: {room: any, message: string, sender: string, game: string}) => {
+            if (data.room === this.getLogin.username || data.room.name === this.getLogin.username || data.sender === this.getLogin.username) {
                 this.$socket.client.emit('subscribe', data.game );
                 this.messages.unshift(data);
             }

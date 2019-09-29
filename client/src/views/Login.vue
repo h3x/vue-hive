@@ -7,18 +7,23 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import LoginComponent from '@/components/Login.vue';
+import { getMyUsernameService } from '../service';
 
 @Component({
     components: {
         LoginComponent,
     },
 })
-export default class Login extends Vue {}
+export default class Login extends Vue {
+    // if already logged in and not on /, redirect to /
+    public mounted() {
+        if ( localStorage.getItem('token') && this.$route.params) {
+            getMyUsernameService(localStorage.getItem('token') || '')
+            .then((res: any) => this.$router.push('/'));
+        }
+    }
+}
 </script>
-
-
-
-
 <style scoped>
 
 form{

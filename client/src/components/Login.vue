@@ -37,6 +37,9 @@ import { Socket } from 'vue-socket.io-extended';
 import {Getter, Action, namespace} from 'vuex-class';
 import axios from 'axios';
 import { ConnectionOptions } from 'tls';
+import { setNewTokenService } from '../service';
+import { INewUser } from '../../../types';
+import Axios from 'axios';
 
 @Component
 export default class LoginComponent extends Vue {
@@ -53,22 +56,21 @@ export default class LoginComponent extends Vue {
 
     private login(e: Event) {
         e.preventDefault();
-        console.log('login component')
+        // console.log('login component')
         this.error = '';
-        const user = {
+        const user: INewUser = {
             name: this.username,
             password: this.password,
         };
 
-        axios.post('http://localhost:3001/api/login', user)
-        .then((res) => {
-            console.log('login success');
+        setNewTokenService(user)
+        .then( (res) => {
             // set local token
-            localStorage.setItem('token', res.data.token);
-
+            localStorage.setItem('token', res.token);
+            localStorage.setItem('name', this.username);
             // emit usename change to parent component
             this.$emit('usernameChange', this.username);
-            
+
             // save verified username to local state TODO: make better
             this.userLogin(this.username);
 
@@ -76,12 +78,15 @@ export default class LoginComponent extends Vue {
             this.$socket.client.emit('newuser', this.username);
             this.$socket.client.emit('subscribe', this.username);
 
+            // reset fields
             this.username = '';
             this.password = '';
-            this.$router.push('/');
+            if (this.$route.path !== '/') {
+                this.$router.push('/');
+            }
         })
         .catch((err) => {
-            this.error = 'Invalid Credentials';
+            this.error = err;
         });
     }
 }

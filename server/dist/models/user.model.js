@@ -1,4 +1,5 @@
 "use strict";
+// Describes the database schema for users
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose = require("mongoose");
 const uniqueValidator = require("mongoose-unique-validator");

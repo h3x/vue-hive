@@ -1,3 +1,5 @@
+// Describes the database schema for users
+
 import * as mongoose from 'mongoose';
 import * as uniqueValidator from 'mongoose-unique-validator';
 import {IUser} from '../../../types';

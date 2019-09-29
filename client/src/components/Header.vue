@@ -26,7 +26,7 @@
         </ul>
         <p class="menu-label">Game</p>
         <ul class="menu-list">
-            <li><a>Current Games</a></li>
+            <li @click=closeAllMenus><router-link to="/currentgames" >Current Games</router-link></li>
             <li><a @click=newGameMenu>New Game</a></li>
             <li><a @click=joinMenu>Join Game</a></li>
             <li><a >Replays</a></li>
@@ -48,8 +48,7 @@
     <section class="modal-card-body">
       <aside class="menu">
         <ul class="menu-list">
-            <li @click=closeAllMenus><a>Single Player</a></li>
-            <li><router-link to=/game>Pass and Play</router-link></li>
+            <li @click=closeAllMenus>><router-link to=/game>Pass and Play</router-link></li>
             <li><a>Online</a></li>
         </ul>
       </aside>

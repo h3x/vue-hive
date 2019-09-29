@@ -33,18 +33,17 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 import Menu from '@/components/Menu.vue';
 import io from 'socket.io-client';
 import {Getter, namespace} from 'vuex-class';
+import { origin } from '../service';
 
 import { Socket } from 'vue-socket.io-extended';
 
 @Component
 export default class extends Vue {
-
     @Getter('getLogin') private getLogin: any;
     private user: string = '';
     private message: string = '';
-
-    // this has to have the local socket defined for some reason TODO: find out why when not on a deadline
-    private socket: any = io.connect('http://localhost:3001');
+    // this has to have the local socket defined for some reason
+    private socket: any = io.connect(origin());
     // private socket: any = io('https://boiling-wildwood-41441.herokuapp.com');
     private messages: Array<{user: string, message: string, room: string}> = [];
     private chatToggle: boolean = false;

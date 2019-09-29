@@ -39,7 +39,6 @@ const mutations = {
 
 const actions = {
     userLogin(context: any, username: any) {
-        // console.log(username)
         context.commit('LOGIN', username);
     },
 

@@ -50,7 +50,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 import { Getter, Action, namespace} from 'vuex-class';
 import { INewUser } from '../../../types';
 import axios from 'axios';
-import { newUserService } from '../service'
+import { newUserService } from '../service';
 
 
 @Component
@@ -73,8 +73,8 @@ export default class extends Vue {
 
         if (this.password === this.passwordCon) {
             newUserService(newUser)
-              .then( ()=> this.$router.push('/'))
-              .catch((err:string) => this.error = err);
+              .then( () => this.$router.push('/'))
+              .catch((err: string) => this.error = err);
 
         } else {
             this.error = 'Passwords do not match';
