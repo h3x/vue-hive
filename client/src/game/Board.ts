@@ -99,8 +99,6 @@ export default class Board {
     // get all the neighbours of a piece
     public getNeighbours(cx: number, cy: number): Array<[number, number]> {
         const n: Array<[number, number]> = [];
-        // console.log(cx, cy)
-        // const [x,y] = RB.pixel_to_hex(cx,cy, this.size);
         for (let s = 0; s < 6; s++) {
             n.push(RB.neighbor(cx, cy, s));
         }

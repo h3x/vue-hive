@@ -53,7 +53,6 @@ export default class HiveApp {
         // socket setup
         this.room = room;
         this.isOnline = this.room ? true : false;
-        //this.room === undefined ? this.isOnline = false : this.isOnline = true;
         this.me = me;
 
         this.$Socket = io.connect('http://localhost:3001');
@@ -107,7 +106,6 @@ export default class HiveApp {
             this.turn = 'W';
         }
 
-        console.log('next player: ' + this.turn)
         this.moveCount++;
     }
 
@@ -136,8 +134,6 @@ export default class HiveApp {
         this.clickListener();
         this.checkSize();
 
-        console.log('is online: ' + this.isOnline)
-
         // check if this game is an existing game and rebuild pieces
         if ( localStorage.getItem('token') && this.isOnline) {
             getMyUsernameService(localStorage.getItem('token') || '')
@@ -148,7 +144,6 @@ export default class HiveApp {
                     getUnfinishedGamesService(this.me).then((res: any) => res.data.games.forEach((game: any) => {
                         // if previosly played game
                         if (this.room === game.gameID) {
-                            console.log('runnnnn')
                             this.$Socket.emit('invite', {
                                 user: 'Admin',
                                 message: 'You have been invited to finished your game with ' + this.me,
@@ -160,49 +155,40 @@ export default class HiveApp {
                             const last = game.moves.pop();
                             this.playerColor = this.me === game.whitePlayer ? 'W' : 'B';
                             this.turn = last.player === 'B' ? 'W' : 'B';
-                            
-                                for(let i = 0; i < last.data.length; i++){
-                                    for (let j = 0; j < this.pieces.length; j++) {
-                                        if (last.data[i].id === this.pieces[j].id) {
-                                            this.moveCount++;
-                                            if(this.pieces[j].id === 'WQ0'){
-                                                this.board.queenPlayed.W = true;
-                                            }
-                                            if(this.pieces[j].id === 'BQ0'){
-                                                this.board.queenPlayed.B = true;
-                                            }
-                                            this.pieces[j].pieceInPlay(true);
-                                            this.pieces[j].unDock();
-                                            console.log(`hx: ${last.data[i].hx}, hy: ${last.data[i].hy}`)
-                                            this.board.move(this.pieces[j], last.data[i].hx, last.data[i].hy, [this.pieces[j].hx, this.pieces[j].hy]);
+
+                            for (let i = 0; i < last.data.length; i++) {
+                                for (let j = 0; j < this.pieces.length; j++) {
+                                    if (last.data[i].id === this.pieces[j].id) {
+                                        this.moveCount++;
+                                        if (this.pieces[j].id === 'WQ0') {
+                                            this.board.queenPlayed.W = true;
                                         }
+                                        if (this.pieces[j].id === 'BQ0') {
+                                            this.board.queenPlayed.B = true;
+                                        }
+                                        this.pieces[j].pieceInPlay(true);
+                                        this.pieces[j].unDock();
+                                        this.board.move(this.pieces[j], last.data[i].hx, last.data[i].hy, [this.pieces[j].hx, this.pieces[j].hy]);
                                     }
                                 }
+                            }
                         }
-                        
-                    }))
-                    .then(() => {
-                        this.socketListener();
-                        this.$Socket.emit('subscribe', this.me)
-                    });
-                
+                    })).then( () => {
 
-                // if not previously played game
-                if(!found){
-                    this.socketListener();
-                    // get player color
-                    this.$Socket.on('player', (color: 'W'|'B') => {
-                        this.playerColor = color;
-                        // as soon as you recievce the color assignment, stop listening for another color assignment
-                        this.$Socket.removeListener('player');
+                        this.socketListener();
+                        if (!found) {
+                            // get player color
+                            this.$Socket.on('player', (color: 'W'|'B') => {
+                                this.playerColor = color;
+                                // as soon as you recievce the color assignment, stop listening for another color assignment
+                                this.$Socket.removeListener('player');
+                            });
+                        }
+                        this.$Socket.emit('subscribeGame', {room: this.room, player: this.me});
                     });
-                    // resubscribe to the room
-                    this.$Socket.emit('subscribeGame', {room: this.room, player: this.me});
-                }
                 }
              });
         }
-        
 
         // start the game loop
         window.setInterval(() => this.draw(), 20);
@@ -249,13 +235,11 @@ export default class HiveApp {
         });
     }
 
+    // When socket hears 'game', go update the board from the database
     private socketListener() {
         this.$Socket.on('game', (data: any) => {
-
-            // TODO: this is where im up to
             getBoardService(this.room)
              .then((res: AxiosResponse) => {
-                // console.log(`board from server ${JSON.stringify(res.data)}`);
                 for (let i = 0; i < res.data.length; i++) {
                     for (let j = 0; j < this.pieces.length; j++) {
                         if (res.data[i].id === this.pieces[j].id) {
@@ -265,10 +249,8 @@ export default class HiveApp {
                         }
                     }
                 }
-             }).then( () => {
-                    this.board.refreshBoard();
-                    this.nextPlayer();
-                });
+                this.nextPlayer();
+             });
         });
     }
 
@@ -279,7 +261,6 @@ export default class HiveApp {
                     piece.isMoveable() &&
                     piece.getPlayer().color === this.turn) {
                         this.selectedHex = piece;
-
                     // normal game play
                         if (this.moveCount > 1) {
                         if (!this.queenInFour()) {

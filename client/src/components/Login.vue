@@ -26,8 +26,11 @@
         <router-link to="/register">  <a type="button" class="button is-danger  is-outlined">Register</a></router-link>
     </p>
     </div>
-    
     </form>
+    <div v-if="error" class="notification is-danger">
+       
+        {{error}}
+    </div>
 </div>
 </template>
 
@@ -95,6 +98,12 @@ export default class LoginComponent extends Vue {
 
 form{
     padding-top: 20%;
+}
+
+.notification {
+    width: 70%;
+    margin: auto;
+    margin-top: 10px;
 }
 
 input[type="text"], input[type="password"] {

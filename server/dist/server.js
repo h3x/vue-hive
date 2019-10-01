@@ -108,7 +108,6 @@ const getUsers = function (req, res) {
     user_model_1.default.find({}, (err, users) => {
         if (err)
             return console.log(err);
-        //console.log(`decoded: ${users}`)
         const u = users.map(user => { return { name: user.name, status: user.status }; });
         return res.status(200).json({
             title: 'users grabbed',
@@ -122,7 +121,6 @@ const getBoard = function (req, res) {
         if (err)
             console.log(err);
         else {
-            // console.log('moves is getBoard: ' + JSON.stringify(game.moves))
             return res.status(200).json({
                 title: 'game data',
                 gameBoard: game.moves[game.moves.length - 1],
@@ -166,12 +164,23 @@ const getUnfinishedGames = function (req, res) {
         return res.status(200).json({ title: 'Current Games', games: info });
     });
 };
+const getAllGames = function (req, res) {
+    game_model_1.default.find({}, (err, games) => {
+        if (err)
+            return res.status(500).json({ title: 'Database error' });
+        const info = [];
+        games.filter((el) => (el.whitePlayer === req.query.player || el.blackPlayer === req.query.player))
+            .map(el => info.push({ gameID: el.game, blackPlayer: el.blackPlayer, whitePlayer: el.whitePlayer, winner: el.winner, finished: el.finished, moves: el.moves }));
+        return res.status(200).json({ title: 'All Games', games: info });
+    });
+};
 const PORT = process.env.PORT || 3001;
 const server = app.use("/", serveStatic(path.join(__dirname, './../../client/dist')))
     .get("/api/user", (req, res) => getUser(req, res))
     .get("/api/users", getUsers)
     .get("/api/board", (req, res) => getBoard(req, res))
     .get("/api/unfinished", (req, res) => getUnfinishedGames(req, res))
+    .get("/api/allGames", (req, res) => getAllGames(req, res))
     .post("/api/gameFinished", (req, res) => gameFinished(req, res))
     .post('/api/signup', (req, res) => postSignup(req, res))
     .post("/api/login", (req, res) => postLogin(req, res))
@@ -228,8 +237,10 @@ io.on('connection', socket => {
                 if (err)
                     console.log(err);
                 else {
-                    game.blackPlayer = data.player;
-                    game.save();
+                    if (game.blackPlayer === '') {
+                        game.blackPlayer = data.player;
+                        game.save();
+                    }
                 }
             });
             io.in(data.room).emit('player', 'B');
@@ -258,7 +269,9 @@ io.on('connection', socket => {
     // send invites to the user
     socket.on('invite', data => io.emit('inv', data));
     socket.on('game', (data, room, player) => {
-        game_model_1.default.findOneAndUpdate({ game: room }, { $push: { moves: { player, data } } }, () => io.in(room).emit('game', data, player));
+        game_model_1.default.findOneAndUpdate({ game: room }, { $push: { moves: { player, data } } }, (res) => {
+            io.in(room).emit('game', data, player);
+        });
     });
     socket.on('logout', (data) => setInterval(() => io.emit('logout', data.user), 1000));
 });

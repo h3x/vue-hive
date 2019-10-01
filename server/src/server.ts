@@ -110,7 +110,6 @@ const getUsers = function(req: express.Request,res: express.Response) {
     //token is valid
     User.find({}, (err, users) => {
       if (err) return console.log(err)
-      //console.log(`decoded: ${users}`)
       const u = users.map(user => { return { name: user.name, status: user.status } })
       return res.status(200).json({
          title: 'users grabbed',
@@ -124,7 +123,6 @@ const getBoard = function(req: express.Request, res: express.Response) {
   Game.findOne({ game: req.query.game }, (err:any, game:IGame) => {
     if(err) console.log(err)
     else{
-      // console.log('moves is getBoard: ' + JSON.stringify(game.moves))
       return res.status(200).json({
         title: 'game data',
         gameBoard: game.moves[game.moves.length - 1],
@@ -171,6 +169,18 @@ const getUnfinishedGames = function(req: express.Request, res: express.Response)
   })
 }
 
+const getAllGames = function(req: express.Request, res: express.Response) {
+  Game.find({}, (err: any, games) => {
+    if(err) return res.status(500).json({title: 'Database error'})
+    const info: any = [];
+    games.filter( (el) => (el.whitePlayer === req.query.player || el.blackPlayer === req.query.player))
+     .map(el =>  info.push({gameID: el.game, blackPlayer: el.blackPlayer, whitePlayer: el.whitePlayer, winner: el.winner, finished: el.finished, moves: el.moves}));
+    
+    return res.status(200).json({title: 'All Games', games: info});
+  })
+}
+
+
 
 
 
@@ -182,6 +192,7 @@ const server = app.use("/", serveStatic ( path.join (__dirname, './../../client/
   .get("/api/users", getUsers)
   .get("/api/board", (req: express.Request,res: express.Response) => getBoard(req, res))
   .get("/api/unfinished", (req: express.Request,res: express.Response) => getUnfinishedGames(req, res))
+  .get("/api/allGames", (req: express.Request,res: express.Response) => getAllGames(req, res))
   .post("/api/gameFinished", (req: express.Request, res: express.Response) => gameFinished(req, res))
   .post('/api/signup', (req: express.Request,res: express.Response) => postSignup(req, res))
   .post("/api/login", (req: express.Request,res: express.Response) => postLogin(req,res))
@@ -244,8 +255,11 @@ io.on('connection', socket => {
       Game.findOne({ game: data.room }, (err:any, game:IGame) => {
         if(err) console.log(err)
         else{
-          game.blackPlayer = data.player; 
-          game.save();
+          if( game.blackPlayer === ''){
+            game.blackPlayer = data.player; 
+            game.save();
+          }
+          
         }
     })
     io.in(data.room).emit('player','B');
@@ -281,7 +295,10 @@ io.on('connection', socket => {
   socket.on('game', (data, room, player) =>{
     Game.findOneAndUpdate({game: room}, 
       {$push: {moves: {player, data}}},
-      () => io.in(room).emit('game',data, player)
+      (res) => {
+        io.in(room).emit('game',data, player);
+      }
+
     )
   })
 
