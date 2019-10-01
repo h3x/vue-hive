@@ -4,8 +4,8 @@ import { Socket } from 'vue-socket.io-extended';
 
 
 export const origin = () => {
-    return 'http://localhost:3001';
-    // return window.location.origin;
+    //return 'http://localhost:3001';
+    return window.location.origin;
 };
 
 // Get a username based on a token
